@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>RAID WIKI</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+
+body {
+  font-family: 'Segoe UI', 'Consolas', monospace, sans-serif;
+  background: #1a1a1a;
+  color: #e6e6e6;
+  min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
+}
+
+#noise-canvas {
+  position: fixed; inset: 0;
+  width: 100%; height: 100%;
+  z-index: 0;
+  opacity: 0.18;
+  pointer-events: none;
+  background: radial-gradient(circle at 50% 50%, #2a2a2a 0%, #141414 100%);
+}
+
+.scanlines {
+  position: fixed; inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(255,255,255,0.03) 0px,
+    rgba(255,255,255,0.03) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+  animation: scanMove 8s linear infinite;
+}
+@keyframes scanMove {
+  from { background-position-y: 0; }
+  to   { background-position-y: 100px; }
+}
+
+.page {
+  position: relative;
+  z-index: 1;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 32px 24px 60px;
+  animation: pageIn 0.6s ease both;
+}
+@keyframes pageIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.site-header {
+  text-align: center;
+  margin-bottom: 32px;
+  user-select: none;
+}
+.title {
+  position: relative;
+  color: #ff2b2b;
+  font-size: clamp(2.4rem, 6vw, 4.5rem);
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-shadow:
+    0 0 8px rgba(255, 0, 0, 0.7),
+    0 0 24px rgba(255, 0, 0, 0.4),
+    0 0 48px rgba(255, 0, 0, 0.25);
+  animation: flicker 4s infinite;
+}
+.title::before,
+.title::after {
+  content: attr(data-text);
+  position: absolute;
+  inset: 0;
+  color: #ff2b2b;
+  pointer-events: none;
+  opacity: 0;
+}
+.title:hover::before {
+  animation: glitchTop 0.4s steps(2, end) 2;
+  color: #00e5ff;
+  transform: translate(-2px, -2px);
+  opacity: 0.9;
+}
+.title:hover::after {
+  animation: glitchBot 0.4s steps(2, end) 2;
+  color: #ff2b2b;
+  transform: translate(2px, 2px);
+  opacity: 0.9;
+}
+@keyframes glitchTop {
+  0% { clip-path: inset(0 0 80% 0); }
+  50% { clip-path: inset(20% 0 40% 0); }
+  100% { clip-path: inset(0 0 80% 0); }
+}
+@keyframes glitchBot {
+  0% { clip-path: inset(70% 0 0 0); }
+  50% { clip-path: inset(40% 0 20% 0); }
+  100% { clip-path: inset(70% 0 0 0); }
+}
+@keyframes flicker {
+  0%, 92%, 100% { opacity: 1; }
+  93% { opacity: 0.7; }
+  94% { opacity: 1; }
+  96% { opacity: 0.6; }
+  97% { opacity: 1; }
+}
+
+.subtitle {
+  color: #888;
+  font-size: 0.9rem;
+  letter-spacing: 0.3em;
+  margin-top: 8px;
+  text-transform: uppercase;
+}
+
+.search-wrap {
+  position: relative;
+  max-width: 480px;
+  margin: 22px auto 0;
+}
+.search-input {
+  width: 100%;
+  background: rgba(0, 0, 0, 0.55);
+  border: 1px solid #444;
+  color: #fff;
+  padding: 10px 14px 10px 38px;
+  font-family: inherit;
+  font-size: 0.95rem;
+  letter-spacing: 0.04em;
+  transition: all 0.25s ease;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2'><circle cx='11' cy='11' r='7'/><line x1='21' y1='21' x2='16.65' y2='16.65'/></svg>");
+  background-repeat: no-repeat;
+  background-position: 12px center;
+}
+.search-input::placeholder { color: #777; }
+.search-input:focus {
+  outline: none;
+  border-color: #ff2b2b;
+  box-shadow: 0 0 14px rgba(255, 43, 43, 0.55);
+  background-color: rgba(20, 0, 0, 0.7);
+}
+.search-results {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0; right: 0;
+  background: rgba(15, 15, 15, 0.96);
+  border: 1px solid #ff2b2b;
+  box-shadow: 0 0 24px rgba(255, 43, 43, 0.35);
+  max-height: 320px;
+  overflow-y: auto;
+  z-index: 20;
+  display: none;
+  animation: dropIn 0.2s ease both;
+}
+.search-results.open { display: block; }
+@keyframes dropIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.search-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid #262626;
+  color: #e6e6e6;
+  padding: 10px 14px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.92rem;
+  transition: all 0.15s ease;
+}
+.search-item:last-child { border-bottom: none; }
+.search-item:hover,
+.search-item.active {
+  background: rgba(255, 43, 43, 0.15);
+  color: #fff;
+  padding-left: 20px;
+  border-left: 3px solid #ff2b2b;
+}
+.search-item .cat-tag {
+  display: inline-block;
+  font-size: 0.7rem;
+  color: #999;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  margin-left: 8px;
+}
+.search-item mark {
+  background: rgba(255, 43, 43, 0.35);
+  color: #fff;
+  padding: 0 2px;
+}
+.search-empty {
+  padding: 14px;
+  color: #888;
+  font-style: italic;
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: 24px;
+  align-items: start;
+}
+
+.sidebar {
+  border: 1px solid #fff;
+  padding: 16px;
+  background: rgba(20, 20, 20, 0.55);
+  backdrop-filter: blur(2px);
+  animation: slideLeft 0.6s 0.1s ease both;
+}
+@keyframes slideLeft {
+  from { opacity: 0; transform: translateX(-14px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+.sidebar-title {
+  color: #ff2b2b;
+  font-size: 1.1rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  border-bottom: 1px solid #444;
+  padding-bottom: 8px;
+  margin-bottom: 12px;
+}
+.catalog { list-style: none; }
+.catalog > li { margin-bottom: 10px; }
+.catalog-btn {
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border: 1px solid #555;
+  color: #fff;
+  padding: 8px 12px;
+  font-size: 0.95rem;
+  cursor: pointer;
+  letter-spacing: 0.05em;
+  transition: all 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+.catalog-btn::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,43,43,0.5), transparent);
+  transform: translateX(-100%);
+  transition: transform 0.4s ease;
+}
+.catalog-btn:hover::before { transform: translateX(100%); }
+.catalog-btn:hover,
+.catalog-btn.active {
+  background: #ff2b2b;
+  border-color: #ff2b2b;
+  color: #fff;
+  box-shadow: 0 0 12px rgba(255, 43, 43, 0.6);
+  transform: translateX(3px);
+}
+.catalog-list {
+  list-style: none;
+  margin: 6px 0 0 10px;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.catalog-list.open { max-height: 500px; }
+.catalog-list li {
+  opacity: 0;
+  transform: translateX(-8px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+.catalog-list.open li { opacity: 1; transform: translateX(0); }
+.catalog-list.open li:nth-child(1) { transition-delay: 0.05s; }
+.catalog-list.open li:nth-child(2) { transition-delay: 0.10s; }
+.catalog-list.open li:nth-child(3) { transition-delay: 0.15s; }
+.catalog-list.open li:nth-child(4) { transition-delay: 0.20s; }
+.catalog-list.open li:nth-child(5) { transition-delay: 0.25s; }
+.catalog-list li button {
+  background: transparent;
+  border: none;
+  color: #cfcfcf;
+  font-size: 0.88rem;
+  padding: 6px 6px;
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+  border-left: 2px solid #333;
+  transition: all 0.2s ease;
+}
+.catalog-list li button:hover {
+  color: #ff2b2b;
+  border-left-color: #ff2b2b;
+  padding-left: 10px;
+  background: rgba(255, 43, 43, 0.08);
+}
+
+.content { min-height: 400px; }
+.framed {
+  position: relative;
+  border: 1px solid #fff;
+  padding: 28px;
+  background: rgba(15, 15, 15, 0.55);
+  backdrop-filter: blur(2px);
+  color: #fff;
+  line-height: 1.6;
+  min-height: 300px;
+  animation: slideRight 0.6s 0.15s ease both;
+}
+@keyframes slideRight {
+  from { opacity: 0; transform: translateX(14px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+.framed::before,
+.framed::after {
+  content: "";
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border: 2px solid #ff2b2b;
+  pointer-events: none;
+  transition: all 0.3s ease;
+}
+.framed::before {
+  top: -1px; left: -1px;
+  border-right: none; border-bottom: none;
+}
+.framed::after {
+  bottom: -1px; right: -1px;
+  border-left: none; border-top: none;
+}
+.framed:hover::before,
+.framed:hover::after {
+  width: 26px;
+  height: 26px;
+  box-shadow: 0 0 14px rgba(255, 43, 43, 0.7);
+}
+
+.content-anim {
+  animation: contentIn 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+@keyframes contentIn {
+  from { opacity: 0; transform: translateY(10px) scale(0.99); filter: blur(2px); }
+  to   { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+}
+.content-anim.fade-out {
+  animation: contentOut 0.25s ease both;
+}
+@keyframes contentOut {
+  from { opacity: 1; transform: translateY(0); filter: blur(0); }
+  to   { opacity: 0; transform: translateY(-8px); filter: blur(3px); }
+}
+
+.framed h2 {
+  color: #ff2b2b;
+  font-size: 1.8rem;
+  margin-bottom: 14px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  position: relative;
+}
+.framed h2::after {
+  content: "";
+  display: block;
+  width: 60px;
+  height: 2px;
+  background: #ff2b2b;
+  margin-top: 8px;
+  box-shadow: 0 0 10px rgba(255, 43, 43, 0.8);
+  animation: lineGrow 0.5s ease both;
+}
+@keyframes lineGrow {
+  from { width: 0; }
+  to   { width: 60px; }
+}
+.framed p { margin-bottom: 12px; color: #eaeaea; }
+.framed .test-text {
+  font-size: 20px;
+  font-weight: 700;
+  color: #fff;
+  margin: 20px 0;
+  text-shadow: 0 0 12px rgba(255, 255, 255, 0.4);
+}
+
+.page-list {
+  list-style: none;
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+}
+.page-list li {
+  opacity: 0;
+  transform: translateY(8px);
+  animation: pageItemIn 0.4s ease forwards;
+}
+.page-list li:nth-child(1) { animation-delay: 0.05s; }
+.page-list li:nth-child(2) { animation-delay: 0.1s; }
+.page-list li:nth-child(3) { animation-delay: 0.15s; }
+.page-list li:nth-child(4) { animation-delay: 0.2s; }
+.page-list li:nth-child(5) { animation-delay: 0.25s; }
+@keyframes pageItemIn {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.site-footer {
+  text-align: center;
+  color: #555;
+  font-size: 0.8rem;
+  letter-spacing: 0.2em;
+  margin-top: 40px;
+}
+
+@media (max-width: 720px) {
+  .layout { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+  <canvas id="noise-canvas"></canvas>
+  <div class="scanlines"></div>
+
+  <div class="page">
+    <header class="site-header">
+      <h1 class="title" data-text="RAID WIKI">RAID WIKI</h1>
+      <p class="subtitle">// рейдеры и антирейдеры MAX</p>
+
+      <div class="search-wrap">
+        <input type="text" id="search-input" class="search-input"
+               placeholder="Поиск по базе... (Ctrl+K)" autocomplete="off" />
+        <div class="search-results" id="search-results"></div>
+      </div>
+    </header>
+
+    <div class="layout">
+      <aside class="sidebar">
+        <h2 class="sidebar-title">Каталог</h2>
+        <ul class="catalog">
+          <li>
+            <button class="catalog-btn" data-category="raiders">Рейдеры</button>
+            <ul class="catalog-list" id="list-raiders"></ul>
+          </li>
+          <li>
+            <button class="catalog-btn" data-category="antiraiders">Антирейдеры</button>
+            <ul class="catalog-list" id="list-antiraiders"></ul>
+          </li>
+        </ul>
+      </aside>
+
+      <main class="content">
+        <div class="framed" id="content-frame"></div>
+      </main>
+    </div>
+
+    <footer class="site-footer">
+      <span>© RAID WIKI</span>
+    </footer>
+  </div>
+
+<script>
+const WIKI = {
+  raiders: [
+    {
+      id: 'test',
+      title: 'Тест',
+      content: `
+        <h2>Тест</h2>
+        <p class="test-text">Это интересно</p>
+        <p>Это тестовая страница рейдера. Здесь в будущем будет подробная информация.</p>
+      `
+    }
+  ],
+  antiraiders: []
+};
+
+const CATEGORY_LABEL = { raiders: 'Рейдеры', antiraiders: 'Антирейдеры' };
+
+const contentFrame = document.getElementById('content-frame');
+const listRaiders = document.getElementById('list-raiders');
+const listAntiraiders = document.getElementById('list-antiraiders');
+const searchInput = document.getElementById('search-input');
+const searchResults = document.getElementById('search-results');
+
+function setContent(html) {
+  if (contentFrame.innerHTML.trim()) {
+    contentFrame.classList.remove('content-anim');
+    contentFrame.classList.add('content-anim', 'fade-out');
+    setTimeout(() => {
+      contentFrame.classList.remove('fade-out');
+      contentFrame.innerHTML = html;
+      void contentFrame.offsetWidth;
+      contentFrame.classList.add('content-anim');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, 250);
+  } else {
+    contentFrame.innerHTML = html;
+    contentFrame.classList.add('content-anim');
+  }
+}
+
+function renderHome() {
+  setContent(`
+    <p>Здравствуйте, вы попали на сайт: «Raid WIKI», здесь вы можете ознакомиться
+    со всеми известными рейдерами/антирейдерами приложения "MAX".
+    Если вам интересно знать что-то о них — то вам именно сюда!</p>
+    <p style="color:#888; margin-top:14px; font-size:0.9rem;">
+      Используйте каталог слева или поиск сверху, чтобы найти нужного рейдера.
+    </p>
+  `);
+}
+
+function renderCategory(category) {
+  const items = WIKI[category] || [];
+  const label = CATEGORY_LABEL[category];
+
+  let html = `<h2>${label}</h2>`;
+  if (!items.length) {
+    html += `<p class="no-comments" style="color:#777; font-style:italic;">Пока здесь пусто...</p>`;
+  } else {
+    html += `<ul class="page-list">`;
+    items.forEach(p => {
+      html += `<li>
+        <button class="catalog-btn" data-page="${p.id}" data-category="${category}">
+          ${escapeHtml(p.title)}
+        </button>
+      </li>`;
+    });
+    html += `</ul>`;
+  }
+
+  setContent(html);
+  setTimeout(() => {
+    contentFrame.querySelectorAll('button[data-page]').forEach(btn => {
+      btn.addEventListener('click', () => renderPage(btn.dataset.category, btn.dataset.page));
+    });
+  }, 260);
+}
+
+function renderPage(category, pageId) {
+  const page = (WIKI[category] || []).find(p => p.id === pageId);
+  if (!page) {
+    setContent(`<h2>Не найдено</h2><p>Такой страницы нет.</p>`);
+    return;
+  }
+  setContent(page.content);
+}
+
+function getAllPages() {
+  const all = [];
+  for (const cat of Object.keys(WIKI)) {
+    for (const page of WIKI[cat]) all.push({ ...page, category: cat });
+  }
+  return all;
+}
+
+function searchPages(query) {
+  const q = query.trim().toLowerCase();
+  if (!q) return [];
+  return getAllPages()
+    .map(p => {
+      const title = p.title.toLowerCase();
+      const text = stripHtml(p.content).toLowerCase();
+      let score = 0;
+      if (title.includes(q)) score += 10;
+      if (title.startsWith(q)) score += 5;
+      if (text.includes(q)) score += 2;
+      return { ...p, score };
+    })
+    .filter(p => p.score > 0)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 8);
+}
+
+function stripHtml(html) {
+  const tmp = document.createElement('div');
+  tmp.innerHTML = html;
+  return tmp.textContent || '';
+}
+
+function highlight(text, query) {
+  if (!query) return escapeHtml(text);
+  const safe = escapeHtml(text);
+  const q = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return safe.replace(new RegExp(`(${q})`, 'ig'), '<mark>$1</mark>');
+}
+
+let activeSearchIndex = -1;
+
+function renderSearchResults(query) {
+  const results = searchPages(query);
+  activeSearchIndex = -1;
+  if (!query.trim()) {
+    searchResults.classList.remove('open');
+    searchResults.innerHTML = '';
+    return;
+  }
+  if (!results.length) {
+    searchResults.innerHTML = `<div class="search-empty">Ничего не найдено</div>`;
+    searchResults.classList.add('open');
+    return;
+  }
+  searchResults.innerHTML = results.map(p => `
+    <button class="search-item" data-category="${p.category}" data-page="${p.id}">
+      ${highlight(p.title, query)}
+      <span class="cat-tag">${CATEGORY_LABEL[p.category]}</span>
+    </button>
+  `).join('');
+  searchResults.classList.add('open');
+
+  searchResults.querySelectorAll('.search-item').forEach(btn => {
+    btn.addEventListener('click', () => {
+      renderPage(btn.dataset.category, btn.dataset.page);
+      searchResults.classList.remove('open');
+      searchInput.value = '';
+      searchInput.blur();
+    });
+  });
+}
+
+searchInput.addEventListener('input', e => renderSearchResults(e.target.value));
+searchInput.addEventListener('focus', e => {
+  if (e.target.value.trim()) searchResults.classList.add('open');
+});
+
+searchInput.addEventListener('keydown', e => {
+  const items = searchResults.querySelectorAll('.search-item');
+  if (!items.length) return;
+  if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    activeSearchIndex = (activeSearchIndex + 1) % items.length;
+    updateActive(items);
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    activeSearchIndex = (activeSearchIndex - 1 + items.length) % items.length;
+    updateActive(items);
+  } else if (e.key === 'Enter') {
+    e.preventDefault();
+    (activeSearchIndex >= 0 ? items[activeSearchIndex] : items[0])?.click();
+  } else if (e.key === 'Escape') {
+    searchResults.classList.remove('open');
+    searchInput.blur();
+  }
+});
+
+function updateActive(items) {
+  items.forEach((it, i) => it.classList.toggle('active', i === activeSearchIndex));
+  items[activeSearchIndex]?.scrollIntoView({ block: 'nearest' });
+}
+
+document.addEventListener('click', e => {
+  if (!e.target.closest('.search-wrap')) searchResults.classList.remove('open');
+});
+
+document.addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+    e.preventDefault();
+    searchInput.focus();
+    searchInput.select();
+  }
+});
+
+function escapeHtml(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+function fillCatalog() {
+  listRaiders.innerHTML = WIKI.raiders.map(p =>
+    `<li><button data-page="${p.id}" data-category="raiders">${escapeHtml(p.title)}</button></li>`
+  ).join('');
+  listAntiraiders.innerHTML = WIKI.antiraiders.map(p =>
+    `<li><button data-page="${p.id}" data-category="antiraiders">${escapeHtml(p.title)}</button></li>`
+  ).join('');
+  document.querySelectorAll('.catalog-list button').forEach(btn => {
+    btn.addEventListener('click', () => renderPage(btn.dataset.category, btn.dataset.page));
+  });
+}
+
+document.querySelectorAll('.catalog-btn[data-category]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const cat = btn.dataset.category;
+    const isOpen = btn.classList.contains('active');
+    document.querySelectorAll('.catalog-btn[data-category]').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.catalog-list').forEach(l => l.classList.remove('open'));
+    if (!isOpen) {
+      btn.classList.add('active');
+      document.getElementById(cat === 'raiders' ? 'list-raiders' : 'list-antiraiders')
+        .classList.add('open');
+      renderCategory(cat);
+    } else renderHome();
+  });
+});
+
+(function initNoise() {
+  const canvas = document.getElementById('noise-canvas');
+  const ctx = canvas.getContext('2d');
+  let w, h, frame = 0;
+  function resize() {
+    w = canvas.width = window.innerWidth;
+    h = canvas.height = window.innerHeight;
+  }
+  function draw() {
+    if (frame % 2 === 0) {
+      const img = ctx.createImageData(w, h);
+      const d = img.data;
+      for (let i = 0; i < d.length; i += 4) {
+        const v = (Math.random() * 255) | 0;
+        d[i] = d[i + 1] = d[i + 2] = v;
+        d[i + 3] = 40;
+      }
+      ctx.putImageData(img, 0, 0);
+    }
+    frame++;
+    requestAnimationFrame(draw);
+  }
+  window.addEventListener('resize', resize);
+  resize();
+  draw();
+})();
+
+fillCatalog();
+renderHome();
+</script>
+</body>
+</html>
