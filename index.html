@@ -235,7 +235,7 @@ body {
   font-size: 0.9rem;
 }
 
-/* ===== Две таблички категорий ===== */
+/* Две таблички категорий */
 .categories {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -243,13 +243,11 @@ body {
   margin-bottom: 28px;
   align-items: start;
 }
-
 .category {
   border-radius: 6px;
   overflow: hidden;
   transition: box-shadow 0.3s ease;
 }
-
 .category-header {
   display: flex;
   align-items: center;
@@ -268,7 +266,6 @@ body {
   position: relative;
   overflow: hidden;
 }
-
 .category-header::before {
   content: "";
   position: absolute;
@@ -278,8 +275,6 @@ body {
   transition: transform 0.5s ease;
 }
 .category-header:hover::before { transform: translateX(100%); }
-
-/* Рейдеры — красная */
 .category.raiders .category-header {
   background: linear-gradient(135deg, #c41717 0%, #ff2b2b 100%);
   box-shadow: 0 0 16px rgba(255,43,43,0.5);
@@ -288,8 +283,6 @@ body {
   box-shadow: 0 0 26px rgba(255,43,43,0.85);
   transform: translateY(-1px);
 }
-
-/* Антирейдеры — светло-синяя */
 .category.antiraiders .category-header {
   background: linear-gradient(135deg, #3b9bd6 0%, #6ec6f5 100%);
   box-shadow: 0 0 16px rgba(110,198,245,0.5);
@@ -298,13 +291,11 @@ body {
   box-shadow: 0 0 26px rgba(110,198,245,0.85);
   transform: translateY(-1px);
 }
-
 .category-title {
   display: flex;
   align-items: center;
   gap: 10px;
 }
-
 .arrow {
   display: inline-block;
   width: 14px;
@@ -320,7 +311,6 @@ body {
   transform: rotate(-135deg);
   margin-top: 4px;
 }
-
 .category-body {
   max-height: 0;
   overflow: hidden;
@@ -328,16 +318,12 @@ body {
   background: rgba(15, 15, 15, 0.6);
   border-radius: 0 0 6px 6px;
 }
-.category.open .category-body {
-  max-height: 2000px;
-}
-
+.category.open .category-body { max-height: 2000px; }
 .category-inner {
   padding: 14px;
   display: grid;
   gap: 8px;
 }
-
 .page-item {
   display: flex;
   align-items: center;
@@ -367,7 +353,6 @@ body {
 @keyframes itemIn {
   to { opacity: 1; transform: translateY(0); }
 }
-
 .page-item:hover {
   background: rgba(255,255,255,0.08);
   border-color: #ff2b2b;
@@ -376,7 +361,6 @@ body {
 .category.antiraiders .page-item:hover {
   border-color: #6ec6f5;
 }
-
 .page-avatar-sm {
   flex-shrink: 0;
   width: 32px; height: 32px;
@@ -399,7 +383,6 @@ body {
   box-shadow: 0 0 10px rgba(110,198,245,0.8);
 }
 .page-avatar-sm img { width: 100%; height: 100%; object-fit: cover; }
-
 .page-item-name {
   font-weight: 600;
   letter-spacing: 0.03em;
@@ -447,7 +430,6 @@ body {
   height: 26px;
   box-shadow: 0 0 14px rgba(255, 43, 43, 0.7);
 }
-
 .content-anim {
   animation: contentIn 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
@@ -460,12 +442,12 @@ body {
 }
 @keyframes contentOut {
   from { opacity: 1; transform: translateY(0); filter: blur(0); }
-  to   { opacity: 0; transform: translateY(-8px); filter: blur(3px); }
+  to   { opacity: 0; transform: translateY(-8px) ; filter: blur(3px); }
 }
 
 .page-hero {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 18px;
   margin-bottom: 22px;
 }
@@ -520,6 +502,57 @@ body {
   to   { width: 60px; }
 }
 
+/* Мини-таблички */
+.page-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 5px 10px;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid #444;
+  color: #e6e6e6;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+.badge .badge-label {
+  color: #888;
+  font-weight: 600;
+}
+.badge .badge-value {
+  color: #fff;
+  font-weight: 700;
+}
+.badge.status-alive {
+  border-color: #22c55e;
+  box-shadow: 0 0 8px rgba(34,197,94,0.35);
+}
+.badge.status-alive .badge-value { color: #22c55e; }
+.badge.status-dead {
+  border-color: #ef4444;
+  box-shadow: 0 0 8px rgba(239,68,68,0.35);
+}
+.badge.status-dead .badge-value { color: #ef4444; }
+.badge.status-unknown {
+  border-color: #eab308;
+  box-shadow: 0 0 8px rgba(234,179,8,0.35);
+}
+.badge.status-unknown .badge-value { color: #eab308; }
+.badge.owner {
+  border-color: #ff2b2b;
+  box-shadow: 0 0 8px rgba(255,43,43,0.35);
+}
+.badge.owner .badge-value { color: #ff2b2b; }
+
 .framed p { margin-bottom: 12px; color: #eaeaea; word-wrap: break-word; }
 .framed .test-text {
   font-size: clamp(1rem, 3vw, 1.25rem);
@@ -527,6 +560,17 @@ body {
   color: #fff;
   margin: 20px 0;
   text-shadow: 0 0 12px rgba(255, 255, 255, 0.4);
+}
+
+/* Картинки внутри текста */
+.framed img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 16px auto;
+  border: 1px solid #ff2b2b;
+  border-radius: 4px;
+  box-shadow: 0 0 14px rgba(255,43,43,0.5);
 }
 
 .site-footer {
@@ -583,6 +627,8 @@ body {
   .page-heading h2 { font-size: 1.2rem; }
   .page-heading .page-cat { font-size: 0.65rem; letter-spacing: 0.15em; }
 
+  .badge { font-size: 0.68rem; padding: 4px 8px; }
+
   .framed { padding: 18px 14px; min-height: 250px; }
   .framed::before,
   .framed::after { width: 12px; height: 12px; }
@@ -626,7 +672,6 @@ body {
       </div>
     </header>
 
-    <!-- Две таблички -->
     <div class="categories">
       <section class="category raiders" id="cat-raiders">
         <button class="category-header" data-category="raiders">
@@ -671,36 +716,39 @@ const WIKI = {
     {
       id: 'uotb',
       title: 'UOTB',
-      avatar: '👑',
+      avatar: 'https://cdn.phototourl.com/free/2026-09-20-f3938c33-1e29-4753-a965-f26629537a3b.jpg',
+      status: 'жив',
+      owner: 'Пабло',
       content: `
-        <p class="test-text">Кто такие UOTB?</p>
         <p>UOTB, или же «Union Of The Brash» — первые рейдеры в максе. Данной
         группировке более 4-ех лет и находились они до MAX'а в Viber и Telegram.
-        Нынешний владелец UOTB — Пабло. Именно с них началось рейдерство в MAX'е.</p>
+        Именно с них началось рейдерство в MAX'е.</p>
       `
     },
     {
       id: 'mars',
       title: 'MARS',
-      avatar: '🪐',
+      avatar: 'https://cdn.phototourl.com/free/2026-09-20-f93f9e0d-7fc5-4d78-8a91-881dd0d61730.jpg',
+      status: 'жив',
+      owner: 'SPAWN',
       content: `
-        <p class="test-text">Кто такие MARS?</p>
         <p>MARS — крупнейший подклан UOTB, занимается он в основном шпионством,
-        но они также и рейдеры. Нынешний владелец — SPAWN. На данный момент
-        в чате адаптации MARS'а 650+ участников.</p>
+        но они также и рейдеры. На данный момент в чате адаптации MARS'а
+        650+ участников.</p>
       `
     },
     {
       id: 'fiery-empire',
       title: 'Fiery Empire',
       avatar: '🔥',
+      status: 'жив',
+      owner: 'FE ASAHI SE',
       content: `
-        <p class="test-text">Кто такие Fiery Empire?</p>
         <p>Fiery Empire — это рейдеры, которые раньше были просто чатом. Раньше
         они назывались «Британской Империи» и зависли от НИЕ, но потом пришёл Cold,
-        и сделал их свободными, после чего они стали рейдерами. Нынешний владелец —
-        FE ASAHI SE, самый крутой именно в личных достижениях владелец.
-        На данный момент в их чате примерно 400+ участников.</p>
+        и сделал их свободными, после чего они стали рейдерами. Самый крутой именно
+        в личных достижениях владелец. На данный момент в их чате примерно
+        400+ участников.</p>
       `
     }
   ],
@@ -709,35 +757,36 @@ const WIKI = {
       id: 'ftaj',
       title: 'FTAJ',
       avatar: '🛡️',
+      status: 'жив',
+      owner: 'даник',
       content: `
-        <p class="test-text">Кто такие FTAJ?</p>
         <p>FTAJ — вторые рейдеры (на данный момент антирейдеры) в MAX'е.
-        Их нынешний создатель — даник. Сейчас занимаются антирейдерством,
-        уничтожают неизвестные и мелкие рейдерские группировки,
-        а также конфликтуют с существуещими крупными.</p>
+        Сейчас занимаются антирейдерством, уничтожают неизвестные и мелкие
+        рейдерские группировки, а также конфликтуют с существуещими крупными.</p>
       `
     },
     {
       id: 'tspr',
       title: 'ЦПР',
-      avatar: '😇',
+      avatar: 'https://cdn.phototourl.com/free/2026-09-20-490ac874-41a7-4be0-8ea7-ce6cb4c60c77.jpg',
+      status: 'жив',
+      owner: 'shalow dern (шейд)',
       content: `
-        <p class="test-text">Кто такие ЦПР?</p>
         <p>ЦПР, или же Центр Противодействия Рейдерам — первая антирейдерская
-        группировка. Нынешний создатель — shalow dern (или же шейд). ЦПР создавался
-        просто канал против обмана со стороны UOTB, но потом перерос в более крупный
-        проект по сливам рейдеров, и их уничтожению. Были созданы в один день с KR.</p>
+        группировка. ЦПР создавался просто канал против обмана со стороны UOTB,
+        но потом перерос в более крупный проект по сливам рейдеров, и их уничтожению.
+        Были созданы в один день с KR.</p>
       `
     },
     {
       id: 'kr',
       title: 'KR',
       avatar: '✨',
+      status: 'жив',
+      owner: 'user (Крутой Челик)',
       content: `
-        <p class="test-text">Кто такие KR?</p>
         <p>KR — бывшие рейдеры, на данный момент антирейдеры. Самые известные
-        свежаки среди всех. Были созданы в один день с ЦПР. Их нынешний владелец —
-        user (или же Крутой Челик, зависит от акка).</p>
+        свежаки среди всех. Были созданы в один день с ЦПР.</p>
       `
     }
   ]
@@ -801,12 +850,35 @@ function renderPage(category, pageId) {
     return;
   }
   const avatarHtml = renderAvatar(page.avatar || page.icon);
+
+  let badgesHtml = '';
+  if (page.status || page.owner) {
+    badgesHtml = `<div class="page-badges">`;
+    if (page.status) {
+      const cls = page.status === 'жив' ? 'status-alive'
+                : page.status === 'мёртв' ? 'status-dead'
+                : 'status-unknown';
+      badgesHtml += `<span class="badge ${cls}">
+        <span class="badge-label">Статус:</span>
+        <span class="badge-value">${escapeHtml(page.status)}</span>
+      </span>`;
+    }
+    if (page.owner) {
+      badgesHtml += `<span class="badge owner">
+        <span class="badge-label">Владелец:</span>
+        <span class="badge-value">${escapeHtml(page.owner)}</span>
+      </span>`;
+    }
+    badgesHtml += `</div>`;
+  }
+
   setContent(`
     <div class="page-hero">
       <div class="page-avatar">${avatarHtml}</div>
       <div class="page-heading">
         <h2>${escapeHtml(page.title)}</h2>
         <div class="page-cat">${CATEGORY_LABEL[category]}</div>
+        ${badgesHtml}
       </div>
     </div>
     ${page.content}
