@@ -1,12 +1,13 @@
 {
-  "name": "raid-wiki",
-  "version": "3.0.0",
-  "description": "RAID WIKI - wiki о рейдерах и антирейдерах MAX",
+  "name": "max-raid-wiki",
+  "version": "4.0.0",
+  "description": "MAX Raid Wiki — вики о рейдерах и антирейдерах MAX",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.45.0",
     "express": "^4.19.2"
   },
   "engines": {
