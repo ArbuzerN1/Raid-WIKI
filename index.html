@@ -42,10 +42,9 @@ body {
 body.cursor-off { cursor: default; }
 body.cursor-off a, body.cursor-off button, body.cursor-off input { cursor: pointer; }
 
-/* Курсор */
+/* Курсор-прицел */
 #cursor {
-  position: fixed;
-  top: 0; left: 0;
+  position: fixed; top: 0; left: 0;
   width: 26px; height: 26px;
   border-radius: 50%;
   pointer-events: none;
@@ -53,8 +52,7 @@ body.cursor-off a, body.cursor-off button, body.cursor-off input { cursor: point
   transform: translate(-50%, -50%);
   mix-blend-mode: screen;
 }
-#cursor::before,
-#cursor::after {
+#cursor::before, #cursor::after {
   content: "";
   position: absolute;
   background: var(--accent);
@@ -63,8 +61,7 @@ body.cursor-off a, body.cursor-off button, body.cursor-off input { cursor: point
 #cursor::before { top: 50%; left: -6px; right: -6px; height: 1px; transform: translateY(-50%); }
 #cursor::after { left: 50%; top: -6px; bottom: -6px; width: 1px; transform: translateX(-50%); }
 #cursor-ring {
-  position: fixed;
-  top: 0; left: 0;
+  position: fixed; top: 0; left: 0;
   width: 34px; height: 34px;
   border: 1px solid var(--accent);
   border-radius: 50%;
@@ -75,8 +72,7 @@ body.cursor-off a, body.cursor-off button, body.cursor-off input { cursor: point
   transition: width 0.2s ease, height 0.2s ease, opacity 0.2s ease;
   box-shadow: 0 0 12px var(--accent);
 }
-body.cursor-off #cursor,
-body.cursor-off #cursor-ring { display: none; }
+body.cursor-off #cursor, body.cursor-off #cursor-ring { display: none; }
 
 /* Фон */
 #noise-canvas {
@@ -127,17 +123,25 @@ body.cursor-off #cursor-ring { display: none; }
   animation: sweepMove 12s linear infinite;
   opacity: 0.5;
 }
+html[data-theme="antiraider"] .sweep {
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(110,198,245,0.06) 48%,
+    rgba(110,198,245,0.12) 50%,
+    rgba(110,198,245,0.06) 52%,
+    transparent 100%
+  );
+  background-size: 100% 40vh;
+}
 @keyframes sweepMove {
   0%   { background-position: 0 -40vh; }
   100% { background-position: 0 140vh; }
 }
 
-/* =====================================================
-   ЭКРАН ПАРОЛЯ
-   ===================================================== */
+/* Экран пароля */
 .lock-screen {
-  position: fixed;
-  inset: 0;
+  position: fixed; inset: 0;
   z-index: 9500;
   display: none;
   align-items: center;
@@ -147,10 +151,7 @@ body.cursor-off #cursor-ring { display: none; }
   animation: lockFadeIn 0.5s ease both;
 }
 .lock-screen.active { display: flex; }
-@keyframes lockFadeIn {
-  from { opacity: 0; }
-  to   { opacity: 1; }
-}
+@keyframes lockFadeIn { from { opacity: 0; } to { opacity: 1; } }
 .lock-box {
   position: relative;
   width: min(420px, 100%);
@@ -158,14 +159,10 @@ body.cursor-off #cursor-ring { display: none; }
   background: rgba(10, 10, 10, 0.95);
   border: 1px solid var(--red);
   border-radius: 8px;
-  box-shadow:
-    0 0 40px rgba(255,0,0,0.4),
-    0 0 80px rgba(255,0,0,0.15),
-    inset 0 0 40px rgba(255,0,0,0.06);
+  box-shadow: 0 0 40px rgba(255,0,0,0.4), 0 0 80px rgba(255,0,0,0.15), inset 0 0 40px rgba(255,0,0,0.06);
   text-align: center;
 }
-.lock-box::before,
-.lock-box::after {
+.lock-box::before, .lock-box::after {
   content: "";
   position: absolute;
   width: 18px; height: 18px;
@@ -180,10 +177,7 @@ body.cursor-off #cursor-ring { display: none; }
   filter: drop-shadow(0 0 12px var(--red));
   animation: lockPulse 2s ease-in-out infinite;
 }
-@keyframes lockPulse {
-  0%, 100% { transform: scale(1); }
-  50%      { transform: scale(1.08); }
-}
+@keyframes lockPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.08); } }
 .lock-title {
   color: var(--red);
   font-size: 1.4rem;
@@ -237,11 +231,7 @@ body.cursor-off #cursor-ring { display: none; }
   box-shadow: 0 0 20px rgba(255,0,0,0.6);
   transition: all 0.25s ease;
 }
-.lock-btn:hover {
-  background: linear-gradient(135deg, #cc0000 0%, #ff4444 100%);
-  box-shadow: 0 0 32px rgba(255,0,0,0.95);
-}
-.lock-btn:active { transform: scale(0.98); }
+.lock-btn:hover { background: linear-gradient(135deg, #cc0000 0%, #ff4444 100%); box-shadow: 0 0 32px rgba(255,0,0,0.95); }
 .lock-btn:disabled { opacity: 0.6; cursor: not-allowed; }
 .lock-error {
   color: var(--red);
@@ -249,30 +239,17 @@ body.cursor-off #cursor-ring { display: none; }
   min-height: 20px;
   margin-top: 12px;
   letter-spacing: 0.08em;
-  animation: lockShake 0.4s ease;
-}
-@keyframes lockShake {
-  0%, 100% { transform: translateX(0); }
-  25% { transform: translateX(-6px); }
-  75% { transform: translateX(6px); }
 }
 
-/* =====================================================
-   ОСНОВНОЙ САЙТ
-   ===================================================== */
-.site-wrap {
-  display: none;
-}
-.site-wrap.visible {
-  display: block;
-  animation: pageIn 0.6s ease both;
-}
+/* Основной сайт */
+.site-wrap { display: none; }
+.site-wrap.visible { display: block; animation: pageIn 0.6s ease both; }
 @keyframes pageIn {
   from { opacity: 0; transform: translateY(14px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* Верхняя панель (тема + выход) */
+/* Топ-бар */
 .top-bar {
   position: fixed;
   top: 12px; right: 12px;
@@ -280,6 +257,8 @@ body.cursor-off #cursor-ring { display: none; }
   display: flex;
   gap: 8px;
   align-items: stretch;
+  flex-wrap: wrap;
+  justify-content: flex-end;
 }
 .theme-toggle {
   display: flex;
@@ -315,6 +294,30 @@ body.cursor-off #cursor-ring { display: none; }
 .theme-btn[data-theme-btn="antiraider"].active {
   background: linear-gradient(135deg, var(--blue-dark), var(--blue));
   box-shadow: 0 0 12px rgba(110,198,245,0.5);
+}
+.admin-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(0,0,0,0.6);
+  border: 1px solid var(--red);
+  color: var(--red);
+  font-family: inherit;
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 8px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  transition: all 0.25s ease;
+  text-decoration: none;
+}
+.admin-btn:hover {
+  color: #fff;
+  background: var(--red);
+  box-shadow: 0 0 16px rgba(255,43,43,0.9);
 }
 .logout-btn {
   display: flex;
@@ -522,8 +525,7 @@ html[data-theme="antiraider"] .search-input:focus { background-color: rgba(0, 15
   transition: all 0.15s ease;
 }
 .search-item:last-child { border-bottom: none; }
-.search-item:hover,
-.search-item.active {
+.search-item:hover, .search-item.active {
   background: rgba(255, 43, 43, 0.14);
   padding-left: 20px;
   border-left: 3px solid var(--accent);
@@ -587,8 +589,7 @@ html[data-theme="antiraider"] .search-input:focus { background-color: rgba(0, 15
 }
 .category-header::before {
   content: "";
-  position: absolute;
-  inset: 0;
+  position: absolute; inset: 0;
   background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
   transform: translateX(-100%);
   transition: transform 0.5s ease;
@@ -702,8 +703,7 @@ html[data-theme="antiraider"] .search-input:focus { background-color: rgba(0, 15
   min-height: 300px;
   box-shadow: inset 0 0 0 1px rgba(255,43,43,0.08), 0 0 40px rgba(0,0,0,0.6);
 }
-.framed::before,
-.framed::after {
+.framed::before, .framed::after {
   content: "";
   position: absolute;
   width: 18px; height: 18px;
@@ -713,7 +713,6 @@ html[data-theme="antiraider"] .search-input:focus { background-color: rgba(0, 15
 }
 .framed::before { top: -2px; left: -2px; border-right: none; border-bottom: none; }
 .framed::after { bottom: -2px; right: -2px; border-left: none; border-top: none; }
-
 .content-anim { animation: contentIn 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
 @keyframes contentIn {
   from { opacity: 0; transform: translateY(10px) scale(0.99); filter: blur(2px); }
@@ -724,7 +723,6 @@ html[data-theme="antiraider"] .search-input:focus { background-color: rgba(0, 15
   from { opacity: 1; transform: translateY(0); }
   to   { opacity: 0; transform: translateY(-8px); filter: blur(3px); }
 }
-
 .page-hero {
   display: flex;
   align-items: flex-start;
@@ -776,11 +774,7 @@ html[data-theme="antiraider"] .search-input:focus { background-color: rgba(0, 15
   text-transform: uppercase;
   margin-top: 8px;
 }
-.page-heading h2.secret-title {
-  cursor: pointer;
-  position: relative;
-  display: inline-block;
-}
+.page-heading h2.secret-title { cursor: pointer; position: relative; display: inline-block; }
 .page-heading h2.secret-title::before {
   content: "";
   position: absolute;
@@ -805,11 +799,9 @@ html[data-theme="antiraider"] .search-input:focus { background-color: rgba(0, 15
   50%      { transform: translate(1px, -1px); }
   75%      { transform: translate(-1px, -1px); }
 }
-@keyframes secretPulse {
-  0%, 100% { opacity: 0.5; }
-  50%      { opacity: 1; }
-}
+@keyframes secretPulse { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
 
+/* Мини-таблички */
 .page-badges { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
 .badge {
   display: inline-flex;
@@ -844,6 +836,93 @@ html[data-theme="antiraider"] .search-input:focus { background-color: rgba(0, 15
   border-radius: 4px;
   box-shadow: 0 0 18px var(--accent);
 }
+
+/* Комментарии */
+.comments-section {
+  margin-top: 30px;
+  padding-top: 24px;
+  border-top: 1px dashed #333;
+}
+.comments-title {
+  color: var(--accent);
+  font-size: 1.1rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  margin-bottom: 16px;
+}
+.comment-form {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 22px;
+}
+.comment-form input,
+.comment-form textarea {
+  width: 100%;
+  background: rgba(0,0,0,0.5);
+  border: 1px solid #444;
+  color: #fff;
+  padding: 10px 12px;
+  font-family: inherit;
+  font-size: 0.92rem;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+.comment-form input:focus,
+.comment-form textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 12px var(--accent);
+}
+.comment-form textarea { min-height: 90px; resize: vertical; }
+.comment-form button {
+  justify-self: start;
+  padding: 10px 24px;
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #fff;
+  background: linear-gradient(135deg, var(--accent-dark) 0%, var(--accent) 100%);
+  border: 1px solid var(--accent);
+  border-radius: 4px;
+  cursor: pointer;
+  box-shadow: 0 0 14px var(--accent);
+  transition: all 0.2s ease;
+}
+.comment-form button:hover { box-shadow: 0 0 22px var(--accent); }
+.comment-form button:disabled { opacity: 0.6; cursor: not-allowed; }
+.comment-list { display: grid; gap: 10px; }
+.comment {
+  padding: 12px 14px;
+  background: rgba(255,255,255,0.03);
+  border-left: 3px solid var(--accent);
+  border-radius: 4px;
+  animation: commentIn 0.4s ease both;
+}
+@keyframes commentIn {
+  from { opacity: 0; transform: translateX(-10px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+.comment-head {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.78rem;
+  margin-bottom: 6px;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.comment-author { color: var(--accent); font-weight: 700; letter-spacing: 0.05em; }
+.comment-date { color: #666; }
+.comment-text {
+  color: #e0e0e0;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.comment-empty { color: #666; font-style: italic; font-size: 0.9rem; }
+
 .site-footer {
   text-align: center;
   color: #444;
@@ -1046,7 +1125,7 @@ body.shame-open { overflow: hidden; }
   .top-bar { top: 8px; right: 8px; gap: 6px; }
   .theme-toggle { padding: 3px; }
   .theme-btn { padding: 5px 7px; font-size: 0.62rem; }
-  .logout-btn { padding: 6px 10px; font-size: 0.62rem; }
+  .logout-btn, .admin-btn { padding: 6px 10px; font-size: 0.62rem; }
   .shame-card { padding: 28px 20px 110px; }
   .shame-enter { padding: 14px 30px; font-size: 0.95rem; }
 }
@@ -1097,6 +1176,7 @@ body.shame-open { overflow: hidden; }
         <button class="theme-btn active" data-theme-btn="raider">⚔️ Рейдеры</button>
         <button class="theme-btn" data-theme-btn="antiraider">🛡️ Антирейдеры</button>
       </div>
+      <a href="/admin" target="_blank" class="admin-btn">⚙️ Админка</a>
       <button class="logout-btn" id="logout-btn">↩ Выйти</button>
     </div>
 
@@ -1284,14 +1364,19 @@ function escapeHtml(str) {
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;').replace(/'/g, '&#039;');
 }
+function formatDate(iso) {
+  try {
+    return new Date(iso).toLocaleString('ru-RU', {
+      day: '2-digit', month: '2-digit', year: '2-digit',
+      hour: '2-digit', minute: '2-digit'
+    });
+  } catch { return ''; }
+}
 
 /* ===== Логин ===== */
 async function tryLogin() {
   const password = lockInput.value;
-  if (!password) {
-    lockError.textContent = 'Введите пароль';
-    return;
-  }
+  if (!password) { lockError.textContent = 'Введите пароль'; return; }
   lockBtn.disabled = true;
   lockBtn.textContent = 'ПРОВЕРКА...';
   lockError.textContent = '';
@@ -1299,6 +1384,7 @@ async function tryLogin() {
     const res = await fetch('/api/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
       body: JSON.stringify({ password })
     });
     if (res.ok) {
@@ -1320,13 +1406,10 @@ async function tryLogin() {
   }
 }
 lockBtn.addEventListener('click', tryLogin);
-lockInput.addEventListener('keydown', (e) => {
-  if (e.key === 'Enter') tryLogin();
-});
+lockInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') tryLogin(); });
 
-/* Выход */
 logoutBtn.addEventListener('click', async () => {
-  try { await fetch('/api/logout', { method: 'POST' }); } catch {}
+  try { await fetch('/api/logout', { method: 'POST', credentials: 'include' }); } catch {}
   WIKI = null;
   contentFrame.innerHTML = `<p style="color:#888">Загрузка данных...</p>`;
   listRaiders.innerHTML = '';
@@ -1338,10 +1421,10 @@ logoutBtn.addEventListener('click', async () => {
   lockInput.focus();
 });
 
-/* ===== Автовход при загрузке ===== */
+/* ===== Автовход ===== */
 async function checkSession() {
   try {
-    const res = await fetch('/api/session');
+    const res = await fetch('/api/session', { credentials: 'include' });
     const data = await res.json();
     if (data.authed) {
       lockScreen.classList.remove('active');
@@ -1383,6 +1466,7 @@ function renderHome() {
     </p>
   `);
 }
+
 function renderPage(category, pageId) {
   const page = (WIKI[category] || []).find(p => p.id === pageId);
   if (!page) {
@@ -1426,13 +1510,93 @@ function renderPage(category, pageId) {
       </div>
     </div>
     ${page.content}
+
+    <section class="comments-section" id="comments-section">
+      <h3 class="comments-title">💬 Комментарии</h3>
+      <form class="comment-form" id="comment-form">
+        <input type="text" id="comment-author" placeholder="Твоё имя (необязательно)" maxlength="40" />
+        <textarea id="comment-text" placeholder="Написать комментарий..." maxlength="1000" required></textarea>
+        <button type="submit">Отправить</button>
+      </form>
+      <div class="comment-list" id="comment-list">
+        <p class="comment-empty">Загрузка...</p>
+      </div>
+    </section>
   `);
 
   if (page.secret && page.shame) {
     const t = contentFrame.querySelector('.secret-title');
     if (t) t.addEventListener('click', () => openShame(page.shame));
   }
+
+  /* Комментарии */
+  const form = document.getElementById('comment-form');
+  const authorInput = document.getElementById('comment-author');
+  const textInput = document.getElementById('comment-text');
+  const list = document.getElementById('comment-list');
+
+  try {
+    const saved = localStorage.getItem('raidwiki-name');
+    if (saved) authorInput.value = saved;
+  } catch {}
+
+  async function loadComments() {
+    try {
+      const res = await fetch(`/api/comments/${category}/${pageId}`, { credentials: 'include' });
+      const items = await res.json();
+      if (!items.length) {
+        list.innerHTML = `<p class="comment-empty">Пока нет комментариев. Будь первым!</p>`;
+        return;
+      }
+      list.innerHTML = items.map(c => `
+        <div class="comment">
+          <div class="comment-head">
+            <span class="comment-author">${escapeHtml(c.author || 'Аноним')}</span>
+            <span class="comment-date">${formatDate(c.created_at)}</span>
+          </div>
+          <div class="comment-text">${escapeHtml(c.text)}</div>
+        </div>
+      `).join('');
+    } catch {
+      list.innerHTML = `<p class="comment-empty" style="color:#ef4444">Не удалось загрузить</p>`;
+    }
+  }
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const author = authorInput.value.trim();
+    const text = textInput.value.trim();
+    if (!text) return;
+    if (author) {
+      try { localStorage.setItem('raidwiki-name', author); } catch {}
+    }
+    const btn = form.querySelector('button');
+    btn.disabled = true;
+    btn.textContent = 'Отправка...';
+    try {
+      const res = await fetch(`/api/comments/${category}/${pageId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ author, text })
+      });
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({}));
+        throw new Error(d.error || 'Ошибка');
+      }
+      textInput.value = '';
+      await loadComments();
+    } catch (err) {
+      alert('Ошибка: ' + err.message);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Отправить';
+    }
+  });
+
+  loadComments();
 }
+
 function fillList(container, category) {
   container.innerHTML = (WIKI[category] || []).map(p => `
     <button class="page-item" data-page="${p.id}" data-category="${category}">
@@ -1447,6 +1611,7 @@ function fillList(container, category) {
     });
   });
 }
+
 function toggleCategory(cat) {
   const el = cat === 'raiders' ? catRaiders : catAntiraiders;
   const other = cat === 'raiders' ? catAntiraiders : catRaiders;
@@ -1628,7 +1793,7 @@ document.addEventListener('keydown', e => {
 /* ===== Загрузка вики ===== */
 async function loadWiki() {
   try {
-    const res = await fetch('/api/wiki', { cache: 'no-store' });
+    const res = await fetch('/api/wiki', { cache: 'no-store', credentials: 'include' });
     if (!res.ok) throw new Error('HTTP ' + res.status);
     WIKI = await res.json();
     fillList(listRaiders, 'raiders');
@@ -1639,8 +1804,7 @@ async function loadWiki() {
   }
 }
 
-/* ===== Старт ===== */
 checkSession();
 </script>
 </body>
-</html>
+              </html> 
