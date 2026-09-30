@@ -19,7 +19,6 @@
   --muted: #8a8a8a;
   --green: #22c55e;
   --yellow: #eab308;
-  /* Тематические акценты — меняются через data-theme */
   --accent: var(--red);
   --accent-dark: var(--red-dark);
 }
@@ -27,7 +26,6 @@ html[data-theme="antiraider"] {
   --accent: var(--blue);
   --accent-dark: var(--blue-dark);
 }
-/* Мягкая смена акцентов */
 body, .category-header, .page-heading h2, .badge, .framed,
 .arrow, .page-avatar, .page-avatar-sm, .page-item, .search-item {
   transition: background-color 0.4s ease, border-color 0.4s ease,
@@ -48,11 +46,10 @@ body {
   -webkit-font-smoothing: antialiased;
   cursor: none;
 }
-/* Возвращаем обычный курсор, если прицел отключён */
 body.cursor-off { cursor: default; }
 body.cursor-off a, body.cursor-off button, body.cursor-off input { cursor: pointer; }
 
-/* ===== КАСТОМНЫЙ КУРСОР-ПРИЦЕЛ ===== */
+/* ===== КУРСОР-ПРИЦЕЛ ===== */
 #cursor {
   position: fixed;
   top: 0; left: 0;
@@ -61,7 +58,7 @@ body.cursor-off a, body.cursor-off button, body.cursor-off input { cursor: point
   pointer-events: none;
   z-index: 9999;
   transform: translate(-50%, -50%);
-  transition: width 0.15s ease, height 0.15s ease, background 0.2s ease;
+  transition: width 0.15s ease, height 0.15s ease;
   mix-blend-mode: screen;
 }
 #cursor::before,
@@ -71,7 +68,6 @@ body.cursor-off a, body.cursor-off button, body.cursor-off input { cursor: point
   background: var(--accent);
   box-shadow: 0 0 8px var(--accent);
 }
-/* Крестовина */
 #cursor::before {
   top: 50%; left: -6px; right: -6px;
   height: 1px;
@@ -92,7 +88,7 @@ body.cursor-off a, body.cursor-off button, body.cursor-off input { cursor: point
   z-index: 9998;
   transform: translate(-50%, -50%);
   opacity: 0.6;
-  transition: width 0.2s ease, height 0.2s ease, border-color 0.3s ease;
+  transition: width 0.2s ease, height 0.2s ease, border-color 0.3s ease, opacity 0.2s ease;
   box-shadow: 0 0 12px rgba(255,43,43,0.5);
 }
 html[data-theme="antiraider"] #cursor-ring {
@@ -196,10 +192,7 @@ html[data-theme="antiraider"] .sweep {
   cursor: pointer;
   transition: all 0.25s ease;
 }
-.theme-btn.active {
-  color: #fff;
-  background: rgba(255,255,255,0.08);
-}
+.theme-btn.active { color: #fff; background: rgba(255,255,255,0.08); }
 .theme-btn[data-theme-btn="raider"].active {
   background: linear-gradient(135deg, var(--red-dark), var(--red));
   box-shadow: 0 0 12px rgba(255,43,43,0.5);
@@ -257,10 +250,7 @@ html[data-theme="antiraider"] .sweep {
     0 0 8px rgba(255,255,255,0.8),
     0 0 22px var(--accent);
 }
-/* Рейдер-эффект: усиление глитча при долгом наведении */
-.title.raid-active {
-  animation: flicker 0.4s infinite, raidShake 0.15s infinite;
-}
+.title.raid-active { animation: flicker 0.4s infinite, raidShake 0.15s infinite; }
 @keyframes raidShake {
   0%   { transform: translate(0,0) skewX(0); }
   25%  { transform: translate(-1px,1px) skewX(-1deg); }
@@ -268,11 +258,7 @@ html[data-theme="antiraider"] .sweep {
   75%  { transform: translate(-1px,-1px) skewX(0); }
   100% { transform: translate(0,0) skewX(0); }
 }
-.title .glitch-layers {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-}
+.title .glitch-layers { position: absolute; inset: 0; pointer-events: none; }
 .title.raid-active .glitch-layers::before,
 .title.raid-active .glitch-layers::after {
   content: attr(data-text);
@@ -677,32 +663,6 @@ html[data-theme="antiraider"] .search-input:focus {
   animation: avatarPulse 3s ease-in-out infinite;
   position: relative;
 }
-/* Для кликабельной «секретной» аватарки */
-.page-avatar.clickable {
-  cursor: pointer;
-}
-.page-avatar.clickable::after {
-  content: "";
-  position: absolute;
-  inset: -2px;
-  border-radius: 50%;
-  border: 1px dashed var(--accent);
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  animation: rotateRing 6s linear infinite;
-}
-.page-avatar.clickable:hover::after { opacity: 1; }
-.page-avatar.clickable:hover {
-  animation: avatarPulse 3s ease-in-out infinite, avatarShake 0.3s infinite;
-}
-@keyframes rotateRing {
-  from { transform: rotate(0); }
-  to   { transform: rotate(360deg); }
-}
-@keyframes avatarShake {
-  0%, 100% { transform: translate(0,0); }
-  50%      { transform: translate(1px, -1px); }
-}
 @keyframes avatarPulse {
   0%, 100% { box-shadow: 0 0 16px var(--accent), 0 0 32px var(--accent); }
   50%      { box-shadow: 0 0 24px var(--accent), 0 0 48px var(--accent); }
@@ -733,7 +693,46 @@ html[data-theme="antiraider"] .search-input:focus {
   margin-top: 8px;
 }
 
-/* Мини-таблички */
+/* ===== СЕКРЕТНЫЙ КЛИКАБЕЛЬНЫЙ ЗАГОЛОВОК ===== */
+.page-heading h2.secret-title {
+  cursor: pointer;
+  position: relative;
+  display: inline-block;
+  transition: text-shadow 0.3s ease, color 0.3s ease;
+}
+.page-heading h2.secret-title::before {
+  content: "";
+  position: absolute;
+  inset: -4px -8px;
+  border: 1px dashed transparent;
+  border-radius: 4px;
+  pointer-events: none;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+.page-heading h2.secret-title:hover {
+  text-shadow:
+    0 0 12px var(--accent),
+    0 0 24px var(--accent),
+    0 0 48px var(--accent);
+  animation: secretShake 0.3s infinite;
+}
+.page-heading h2.secret-title:hover::before {
+  border-color: var(--accent);
+  box-shadow: 0 0 12px var(--accent);
+  animation: secretPulse 1s ease-in-out infinite;
+}
+@keyframes secretShake {
+  0%, 100% { transform: translate(0, 0); }
+  25%      { transform: translate(-1px, 1px); }
+  50%      { transform: translate(1px, -1px); }
+  75%      { transform: translate(-1px, -1px); }
+}
+@keyframes secretPulse {
+  0%, 100% { opacity: 0.5; }
+  50%      { opacity: 1; }
+}
+
+/* ===== МИНИ-ТАБЛИЧКИ ===== */
 .page-badges { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
 .badge {
   display: inline-flex;
@@ -780,7 +779,7 @@ html[data-theme="antiraider"] .search-input:focus {
 .site-footer .dot { color: var(--accent); animation: blink 1.4s steps(2, start) infinite; }
 
 /* =====================================================
-   ЭКРАН ВЫСТРЕЛА → ПАДЕНИЕ КАМЕРЫ → «ПОЗОРНАЯ СТОРОНА»
+   ПОЗОРНАЯ СТОРОНА — оверлей
    ===================================================== */
 .shame-overlay {
   position: fixed;
@@ -791,7 +790,6 @@ html[data-theme="antiraider"] .search-input:focus {
 }
 .shame-overlay.active { display: block; }
 
-/* Затемнение */
 .shame-dim {
   position: absolute;
   inset: 0;
@@ -800,7 +798,6 @@ html[data-theme="antiraider"] .search-input:focus {
 }
 .shame-overlay.go .shame-dim { background: rgba(0,0,0,0.85); }
 
-/* Вспышка от выстрела */
 .shame-flash {
   position: absolute;
   inset: 0;
@@ -816,7 +813,6 @@ html[data-theme="antiraider"] .search-input:focus {
   100% { opacity: 0; }
 }
 
-/* Тряска камеры */
 .shame-shake {
   position: absolute;
   inset: 0;
@@ -832,7 +828,6 @@ html[data-theme="antiraider"] .search-input:focus {
   40%, 60% { transform: translate(6px, -2px) rotate(0.6deg); }
 }
 
-/* «Выстрел» — тонкая белая полоса + круг */
 .shame-bullet {
   position: absolute;
   top: 45%; left: 50%;
@@ -856,7 +851,6 @@ html[data-theme="antiraider"] .search-input:focus {
   100% { transform: translate(-50%, -50%) scale(40); opacity: 0; }
 }
 
-/* Тёмная карточка позора */
 .shame-card {
   position: absolute;
   left: 50%;
@@ -912,7 +906,6 @@ html[data-theme="antiraider"] .search-input:focus {
   50%      { transform: scale(1.05); }
 }
 
-/* Пылающий низ */
 .shame-flames {
   position: absolute;
   left: 0; right: 0; bottom: 0;
@@ -934,7 +927,6 @@ html[data-theme="antiraider"] .search-input:focus {
   50%      { transform: scaleY(1.15) translateY(-6px); }
 }
 
-/* Красная кнопка «Зайти» */
 .shame-enter {
   position: absolute;
   left: 50%;
@@ -976,10 +968,9 @@ html[data-theme="antiraider"] .search-input:focus {
   transform: translateX(-50%) scale(0.98);
 }
 
-/* Плашка "ПОЗОРНЫЕ СТОРОНЫ" — карточка после кнопки */
 .shame-details {
   margin-top: 24px;
-  padding: 24px 20px;
+  padding: 0 20px;
   background: rgba(0,0,0,0.6);
   border: 1px solid #ff2b2b;
   border-radius: 6px;
@@ -995,7 +986,6 @@ html[data-theme="antiraider"] .search-input:focus {
   padding: 24px 20px;
 }
 
-/* Кнопка закрытия */
 .shame-close {
   position: absolute;
   top: 12px; right: 14px;
@@ -1017,7 +1007,6 @@ html[data-theme="antiraider"] .search-input:focus {
   transform: rotate(90deg);
 }
 
-/* При удержании открытого оверлея — приглушаем шум и сканы */
 body.shame-open #noise-canvas { opacity: 0.06; }
 body.shame-open { overflow: hidden; }
 
@@ -1027,7 +1016,7 @@ body.shame-open { overflow: hidden; }
   .shame-flames { height: 100px; }
 }
 
-/* ===== Адаптив (старое) ===== */
+/* ===== АДАПТИВ ===== */
 @media (max-width: 820px) {
   .categories { grid-template-columns: 1fr; gap: 14px; }
   .framed { padding: 24px 20px; }
@@ -1077,11 +1066,9 @@ body.shame-open { overflow: hidden; }
   <div class="sweep"></div>
   <div class="vignette"></div>
 
-  <!-- Курсор-прицел -->
   <div id="cursor-ring"></div>
   <div id="cursor"></div>
 
-  <!-- Переключатель темы -->
   <div class="theme-toggle">
     <button class="theme-btn active" data-theme-btn="raider">⚔️ Рейдеры</button>
     <button class="theme-btn" data-theme-btn="antiraider">🛡️ Антирейдеры</button>
@@ -1175,7 +1162,6 @@ const searchResults = document.getElementById('search-results');
 const catRaiders = document.getElementById('cat-raiders');
 const catAntiraiders = document.getElementById('cat-antiraiders');
 
-/* ============ ЭЛЕМЕНТЫ ПОЗОРНОГО ОВЕРЛЕЯ ============ */
 const shameOverlay = document.getElementById('shame-overlay');
 const shameEnter = document.getElementById('shame-enter');
 const shameClose = document.getElementById('shame-close');
@@ -1186,7 +1172,7 @@ const shameDetailsTitle = document.getElementById('shame-details-title');
 const shameDetailsText = document.getElementById('shame-details-text');
 const shameStamp = document.getElementById('shame-stamp');
 
-/* ============ ТЕМА ============ */
+/* ===== ТЕМА ===== */
 const themeBtns = document.querySelectorAll('[data-theme-btn]');
 function setTheme(theme) {
   document.documentElement.setAttribute('data-theme', theme);
@@ -1202,7 +1188,7 @@ themeBtns.forEach(btn => {
   setTheme(saved === 'antiraider' ? 'antiraider' : 'raider');
 })();
 
-/* ============ КУРСОР-ПРИЦЕЛ ============ */
+/* ===== КУРСОР-ПРИЦЕЛ ===== */
 const cursor = document.getElementById('cursor');
 const cursorRing = document.getElementById('cursor-ring');
 let mx = window.innerWidth / 2, my = window.innerHeight / 2;
@@ -1223,27 +1209,25 @@ document.addEventListener('mousemove', (e) => {
   requestAnimationFrame(ringLoop);
 })();
 
-/* Увеличение кольца при наведении на кликабельное */
 document.addEventListener('mouseover', (e) => {
-  if (e.target.closest('button, a, input, .page-avatar.clickable')) {
+  if (e.target.closest('button, a, input, .secret-title')) {
     cursorRing.style.width = '48px';
     cursorRing.style.height = '48px';
     cursorRing.style.opacity = '0.9';
   }
 });
 document.addEventListener('mouseout', (e) => {
-  if (e.target.closest('button, a, input, .page-avatar.clickable')) {
+  if (e.target.closest('button, a, input, .secret-title')) {
     cursorRing.style.width = '34px';
     cursorRing.style.height = '34px';
     cursorRing.style.opacity = '0.6';
   }
 });
 
-/* ============ РЕЙДЕР-ЭФФЕКТ (долгое наведение на заголовок) ============ */
+/* ===== РЕЙДЕР-ЭФФЕКТ ===== */
 const mainTitle = document.getElementById('main-title');
 let titleHoverStart = 0;
 let titleTimer = null;
-
 mainTitle.addEventListener('mouseenter', () => {
   titleHoverStart = Date.now();
   titleTimer = setInterval(() => {
@@ -1258,7 +1242,7 @@ mainTitle.addEventListener('mouseleave', () => {
   mainTitle.classList.remove('raid-active');
 });
 
-/* ============ АВАТАРКИ ============ */
+/* ===== АВАТАРКИ ===== */
 function isImageUrl(s) {
   return typeof s === 'string' && /^(https?:)?\/\//i.test(s);
 }
@@ -1270,7 +1254,7 @@ function renderAvatar(value, fallback = '❓') {
   return escapeHtml(value);
 }
 
-/* ============ РЕНДЕР ============ */
+/* ===== РЕНДЕР ===== */
 function setContent(html) {
   if (contentFrame.innerHTML.trim()) {
     contentFrame.classList.remove('content-anim');
@@ -1327,14 +1311,16 @@ function renderPage(category, pageId) {
     badgesHtml += `</div>`;
   }
 
-  const avatarCls = page.secret ? 'page-avatar clickable' : 'page-avatar';
-  const avatarTitle = page.secret ? 'title="Не нажимай..."' : '';
+  /* Секретный заголовок — кликабельный */
+  const titleHtml = page.secret
+    ? `<h2 class="secret-title" title="Не нажимай...">${escapeHtml(page.title)}</h2>`
+    : `<h2>${escapeHtml(page.title)}</h2>`;
 
   setContent(`
     <div class="page-hero">
-      <div class="${avatarCls}" ${avatarTitle}>${avatarHtml}</div>
+      <div class="page-avatar">${avatarHtml}</div>
       <div class="page-heading">
-        <h2>${escapeHtml(page.title)}</h2>
+        ${titleHtml}
         <div class="page-cat">${CATEGORY_LABEL[category]}</div>
         ${badgesHtml}
       </div>
@@ -1342,10 +1328,10 @@ function renderPage(category, pageId) {
     ${page.content}
   `);
 
-  /* Если секретная — вешаем клик по аватарке */
+  /* Клик по слову "ЦПР" в заголовке → позорная сторона */
   if (page.secret && page.shame) {
-    const av = contentFrame.querySelector('.page-avatar.clickable');
-    if (av) av.addEventListener('click', () => openShame(page.shame));
+    const t = contentFrame.querySelector('.secret-title');
+    if (t) t.addEventListener('click', () => openShame(page.shame));
   }
 }
 
@@ -1378,7 +1364,7 @@ document.querySelectorAll('.category-header').forEach(btn => {
   });
 });
 
-/* ============ ПОИСК ============ */
+/* ===== ПОИСК ===== */
 function getAllPages() {
   const all = [];
   for (const cat of Object.keys(WIKI)) {
@@ -1492,9 +1478,8 @@ function escapeHtml(str) {
     .replace(/'/g, '&#039;');
 }
 
-/* ============ ОТКРЫТИЕ/ЗАКРЫТИЕ ПОЗОРНОЙ СТОРОНЫ ============ */
+/* ===== ПОЗОРНАЯ СТОРОНА ===== */
 function openShame(shame) {
-  /* Заполняем тексты */
   shameTitle.textContent = shame.title || 'ПОЗОРНАЯ СТОРОНА';
   shameText.textContent = shame.text || '';
   shameDetailsTitle.textContent = shame.title || 'ПОЗОРНЫЕ СТОРОНЫ';
@@ -1502,32 +1487,26 @@ function openShame(shame) {
   shameStamp.textContent = shame.stamp || 'НЕ СКРЫТЬ!';
   shameDetails.classList.remove('open');
 
-  /* Сбрасываем анимации */
   shameOverlay.classList.remove('active', 'fire', 'go');
   void shameOverlay.offsetWidth;
 
-  /* Показываем */
   shameOverlay.classList.add('active');
   document.body.classList.add('shame-open');
 
-  /* Кадр 1: выстрел + вспышка + тряска */
   requestAnimationFrame(() => {
     shameOverlay.classList.add('fire');
   });
 
-  /* Кадр 2: затемнение + падение карточки + пылающий низ */
   setTimeout(() => {
     shameOverlay.classList.add('go');
   }, 450);
 
-  /* Клик по кнопке «Зайти» → раскрываем инфу */
   shameEnter.onclick = () => {
     shameDetails.classList.add('open');
     shameEnter.style.opacity = '0';
     shameEnter.style.pointerEvents = 'none';
   };
 }
-
 function closeShame() {
   shameOverlay.classList.remove('active', 'fire', 'go');
   document.body.classList.remove('shame-open');
@@ -1540,7 +1519,7 @@ document.addEventListener('keydown', e => {
   if (e.key === 'Escape' && shameOverlay.classList.contains('active')) closeShame();
 });
 
-/* ============ ШУМ ============ */
+/* ===== ШУМ ===== */
 (function initNoise() {
   const canvas = document.getElementById('noise-canvas');
   const ctx = canvas.getContext('2d');
@@ -1568,7 +1547,7 @@ document.addEventListener('keydown', e => {
   draw();
 })();
 
-/* ============ ЗАГРУЗКА ============ */
+/* ===== ЗАГРУЗКА ===== */
 async function loadWiki() {
   try {
     const res = await fetch('/api/wiki', { cache: 'no-store' });
