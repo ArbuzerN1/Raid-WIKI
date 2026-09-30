@@ -1,34 +1,114 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="ru" data-theme="raider">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-<meta name="theme-color" content="#1a1a1a" />
+<meta name="theme-color" content="#0d0d0d" />
 <title>MAX Raid Wiki</title>
 <style>
+:root {
+  --red: #ff2b2b;
+  --red-dark: #c41717;
+  --blue: #6ec6f5;
+  --blue-dark: #3b9bd6;
+  --bg-0: #0d0d0d;
+  --bg-1: #1a1a1a;
+  --bg-2: #202020;
+  --line: #ffffff;
+  --text: #e6e6e6;
+  --muted: #8a8a8a;
+  --green: #22c55e;
+  --yellow: #eab308;
+  /* Тематические акценты — меняются через data-theme */
+  --accent: var(--red);
+  --accent-dark: var(--red-dark);
+}
+html[data-theme="antiraider"] {
+  --accent: var(--blue);
+  --accent-dark: var(--blue-dark);
+}
+/* Мягкая смена акцентов */
+body, .category-header, .page-heading h2, .badge, .framed,
+.arrow, .page-avatar, .page-avatar-sm, .page-item, .search-item {
+  transition: background-color 0.4s ease, border-color 0.4s ease,
+              box-shadow 0.4s ease, color 0.4s ease, text-shadow 0.4s ease;
+}
+
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 html, body { height: 100%; }
 html { scroll-behavior: smooth; }
 
 body {
   font-family: 'Segoe UI', 'Consolas', monospace, sans-serif;
-  background: #1a1a1a;
-  color: #e6e6e6;
+  background: var(--bg-1);
+  color: var(--text);
   min-height: 100vh;
   position: relative;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
-  text-rendering: optimizeLegibility;
+  cursor: none;
 }
+/* Возвращаем обычный курсор, если прицел отключён */
+body.cursor-off { cursor: default; }
+body.cursor-off a, body.cursor-off button, body.cursor-off input { cursor: pointer; }
 
-/* Фон */
+/* ===== КАСТОМНЫЙ КУРСОР-ПРИЦЕЛ ===== */
+#cursor {
+  position: fixed;
+  top: 0; left: 0;
+  width: 26px; height: 26px;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9999;
+  transform: translate(-50%, -50%);
+  transition: width 0.15s ease, height 0.15s ease, background 0.2s ease;
+  mix-blend-mode: screen;
+}
+#cursor::before,
+#cursor::after {
+  content: "";
+  position: absolute;
+  background: var(--accent);
+  box-shadow: 0 0 8px var(--accent);
+}
+/* Крестовина */
+#cursor::before {
+  top: 50%; left: -6px; right: -6px;
+  height: 1px;
+  transform: translateY(-50%);
+}
+#cursor::after {
+  left: 50%; top: -6px; bottom: -6px;
+  width: 1px;
+  transform: translateX(-50%);
+}
+#cursor-ring {
+  position: fixed;
+  top: 0; left: 0;
+  width: 34px; height: 34px;
+  border: 1px solid var(--accent);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9998;
+  transform: translate(-50%, -50%);
+  opacity: 0.6;
+  transition: width 0.2s ease, height 0.2s ease, border-color 0.3s ease;
+  box-shadow: 0 0 12px rgba(255,43,43,0.5);
+}
+html[data-theme="antiraider"] #cursor-ring {
+  box-shadow: 0 0 12px rgba(110,198,245,0.5);
+}
+body.cursor-off #cursor,
+body.cursor-off #cursor-ring { display: none; }
+
+/* ===== ФОН ===== */
 #noise-canvas {
   position: fixed; inset: 0;
   width: 100%; height: 100%;
   z-index: 0;
-  opacity: 0.18;
+  opacity: 0.14;
   pointer-events: none;
-  background: radial-gradient(circle at 50% 50%, #2a2a2a 0%, #141414 100%);
+  background: radial-gradient(circle at 50% 30%, #232323 0%, #141414 55%, #0d0d0d 100%);
 }
 .scanlines {
   position: fixed; inset: 0;
@@ -36,8 +116,8 @@ body {
   pointer-events: none;
   background: repeating-linear-gradient(
     to bottom,
-    rgba(255,255,255,0.03) 0px,
-    rgba(255,255,255,0.03) 1px,
+    rgba(255,255,255,0.028) 0px,
+    rgba(255,255,255,0.028) 1px,
     transparent 1px,
     transparent 3px
   );
@@ -47,92 +127,215 @@ body {
   from { background-position-y: 0; }
   to   { background-position-y: 100px; }
 }
+.vignette {
+  position: fixed; inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.55) 100%);
+}
+.sweep {
+  position: fixed; inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(255,43,43,0.06) 48%,
+    rgba(255,43,43,0.12) 50%,
+    rgba(255,43,43,0.06) 52%,
+    transparent 100%
+  );
+  background-size: 100% 40vh;
+  background-repeat: no-repeat;
+  animation: sweepMove 12s linear infinite;
+  opacity: 0.5;
+}
+html[data-theme="antiraider"] .sweep {
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(110,198,245,0.06) 48%,
+    rgba(110,198,245,0.12) 50%,
+    rgba(110,198,245,0.06) 52%,
+    transparent 100%
+  );
+  background-size: 100% 40vh;
+}
+@keyframes sweepMove {
+  0%   { background-position: 0 -40vh; }
+  100% { background-position: 0 140vh; }
+}
 
+/* ===== ТЕМА-ПЕРЕКЛЮЧАТЕЛЬ ===== */
+.theme-toggle {
+  position: fixed;
+  top: 14px; right: 14px;
+  z-index: 70;
+  display: flex;
+  gap: 6px;
+  background: rgba(0,0,0,0.6);
+  border: 1px solid #333;
+  border-radius: 6px;
+  padding: 5px;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+.theme-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border: none;
+  background: transparent;
+  color: #888;
+  font-family: inherit;
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 6px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+.theme-btn.active {
+  color: #fff;
+  background: rgba(255,255,255,0.08);
+}
+.theme-btn[data-theme-btn="raider"].active {
+  background: linear-gradient(135deg, var(--red-dark), var(--red));
+  box-shadow: 0 0 12px rgba(255,43,43,0.5);
+}
+.theme-btn[data-theme-btn="antiraider"].active {
+  background: linear-gradient(135deg, var(--blue-dark), var(--blue));
+  box-shadow: 0 0 12px rgba(110,198,245,0.5);
+}
+
+/* ===== СТРАНИЦА ===== */
 .page {
   position: relative;
   z-index: 1;
   max-width: 1000px;
   margin: 0 auto;
-  padding: 32px 24px 60px;
+  padding: 36px 24px 70px;
   animation: pageIn 0.6s ease both;
 }
 @keyframes pageIn {
-  from { opacity: 0; transform: translateY(12px); }
+  from { opacity: 0; transform: translateY(14px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* Шапка */
+/* Заголовок */
 .site-header {
   text-align: center;
-  margin-bottom: 32px;
+  margin-bottom: 36px;
   user-select: none;
+}
+.title-line {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
 }
 .title {
   position: relative;
-  color: #ff2b2b;
-  font-size: clamp(1.7rem, 7vw, 4rem);
+  color: var(--accent);
+  font-size: clamp(1.9rem, 7.5vw, 4.2rem);
   font-weight: 900;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.09em;
   text-transform: uppercase;
   text-shadow:
-    0 0 8px rgba(255, 0, 0, 0.7),
-    0 0 24px rgba(255, 0, 0, 0.4),
-    0 0 48px rgba(255, 0, 0, 0.25);
-  animation: flicker 4s infinite;
+    0 0 8px currentColor,
+    0 0 24px currentColor,
+    0 0 48px currentColor;
+  animation: flicker 5s infinite;
   line-height: 1.05;
   word-break: break-word;
 }
-.title::before,
-.title::after {
+.title .accent {
+  color: #fff;
+  text-shadow:
+    0 0 8px rgba(255,255,255,0.8),
+    0 0 22px var(--accent);
+}
+/* Рейдер-эффект: усиление глитча при долгом наведении */
+.title.raid-active {
+  animation: flicker 0.4s infinite, raidShake 0.15s infinite;
+}
+@keyframes raidShake {
+  0%   { transform: translate(0,0) skewX(0); }
+  25%  { transform: translate(-1px,1px) skewX(-1deg); }
+  50%  { transform: translate(1px,-1px) skewX(1deg); }
+  75%  { transform: translate(-1px,-1px) skewX(0); }
+  100% { transform: translate(0,0) skewX(0); }
+}
+.title .glitch-layers {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.title.raid-active .glitch-layers::before,
+.title.raid-active .glitch-layers::after {
   content: attr(data-text);
   position: absolute;
   inset: 0;
-  color: #ff2b2b;
-  pointer-events: none;
-  opacity: 0;
+  color: var(--accent);
 }
-.title:hover::before {
-  animation: glitchTop 0.4s steps(2, end) 2;
+.title.raid-active .glitch-layers::before {
+  animation: glitch1 0.3s infinite;
+  mix-blend-mode: screen;
+}
+.title.raid-active .glitch-layers::after {
+  animation: glitch2 0.25s infinite;
+  mix-blend-mode: screen;
   color: #00e5ff;
-  transform: translate(-2px, -2px);
-  opacity: 0.9;
 }
-.title:hover::after {
-  animation: glitchBot 0.4s steps(2, end) 2;
-  color: #ff2b2b;
-  transform: translate(2px, 2px);
-  opacity: 0.9;
+@keyframes glitch1 {
+  0%   { clip-path: inset(20% 0 60% 0); transform: translate(-3px,0); }
+  33%  { clip-path: inset(60% 0 10% 0); transform: translate(2px,-1px); }
+  66%  { clip-path: inset(10% 0 70% 0); transform: translate(-1px,1px); }
+  100% { clip-path: inset(40% 0 30% 0); transform: translate(3px,0); }
 }
-@keyframes glitchTop {
-  0% { clip-path: inset(0 0 80% 0); }
-  50% { clip-path: inset(20% 0 40% 0); }
-  100% { clip-path: inset(0 0 80% 0); }
+@keyframes glitch2 {
+  0%   { clip-path: inset(70% 0 10% 0); transform: translate(3px,0); }
+  33%  { clip-path: inset(10% 0 70% 0); transform: translate(-2px,1px); }
+  66%  { clip-path: inset(50% 0 30% 0); transform: translate(1px,-1px); }
+  100% { clip-path: inset(20% 0 60% 0); transform: translate(-3px,0); }
 }
-@keyframes glitchBot {
-  0% { clip-path: inset(70% 0 0 0); }
-  50% { clip-path: inset(40% 0 20% 0); }
-  100% { clip-path: inset(70% 0 0 0); }
+.cursor-blink {
+  display: inline-block;
+  width: 0.55ch;
+  height: 0.9em;
+  background: var(--accent);
+  margin-left: 6px;
+  box-shadow: 0 0 10px var(--accent);
+  animation: blink 1s steps(2, start) infinite;
+  vertical-align: -0.08em;
 }
+@keyframes blink { 50% { opacity: 0; } }
 @keyframes flicker {
-  0%, 92%, 100% { opacity: 1; }
-  93% { opacity: 0.7; }
-  94% { opacity: 1; }
-  96% { opacity: 0.6; }
-  97% { opacity: 1; }
+  0%, 91%, 100% { opacity: 1; }
+  92% { opacity: 0.65; }
+  93% { opacity: 1; }
+  95% { opacity: 0.55; }
+  96% { opacity: 1; }
 }
 .subtitle {
-  color: #888;
-  font-size: clamp(0.7rem, 2vw, 0.9rem);
-  letter-spacing: 0.3em;
-  margin-top: 8px;
+  color: var(--muted);
+  font-size: clamp(0.68rem, 2vw, 0.85rem);
+  letter-spacing: 0.32em;
+  margin-top: 10px;
   text-transform: uppercase;
 }
+.subtitle .dot {
+  color: var(--accent);
+  animation: blink 1.4s steps(2, start) infinite;
+}
 
-/* Поиск */
+/* ===== ПОИСК ===== */
 .search-wrap {
   position: relative;
-  max-width: 480px;
-  margin: 22px auto 0;
+  max-width: 520px;
+  margin: 24px auto 0;
   padding: 0 4px;
 }
 .search-input {
@@ -140,7 +343,7 @@ body {
   background: rgba(0, 0, 0, 0.55);
   border: 1px solid #444;
   color: #fff;
-  padding: 12px 14px 12px 40px;
+  padding: 12px 44px 12px 42px;
   font-family: inherit;
   font-size: 0.95rem;
   letter-spacing: 0.04em;
@@ -150,28 +353,46 @@ body {
   background-repeat: no-repeat;
   background-position: 14px center;
 }
-.search-input::placeholder { color: #777; }
+.search-input::placeholder { color: #777; letter-spacing: 0.1em; }
 .search-input:focus {
   outline: none;
-  border-color: #ff2b2b;
-  box-shadow: 0 0 14px rgba(255, 43, 43, 0.55);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent), 0 0 18px var(--accent);
   background-color: rgba(20, 0, 0, 0.7);
 }
+html[data-theme="antiraider"] .search-input:focus {
+  background-color: rgba(0, 15, 30, 0.7);
+}
+.search-hint {
+  position: absolute;
+  right: 14px; top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.65rem;
+  letter-spacing: 0.12em;
+  color: #666;
+  border: 1px solid #333;
+  padding: 2px 6px;
+  border-radius: 3px;
+  pointer-events: none;
+  background: rgba(0,0,0,0.4);
+  transition: opacity 0.2s ease;
+}
+.search-input:focus + .search-hint { opacity: 0; }
+
 .search-results {
   position: absolute;
   top: calc(100% + 6px);
   left: 4px; right: 4px;
-  background: rgba(15, 15, 15, 0.98);
-  border: 1px solid #ff2b2b;
-  box-shadow: 0 0 24px rgba(255, 43, 43, 0.35);
+  background: rgba(12, 12, 12, 0.98);
+  border: 1px solid var(--accent);
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.05), 0 0 30px var(--accent);
   max-height: 60vh;
   overflow-y: auto;
   z-index: 20;
   display: none;
-  animation: dropIn 0.2s ease both;
   border-radius: 4px;
 }
-.search-results.open { display: block; }
+.search-results.open { display: block; animation: dropIn 0.2s ease both; }
 @keyframes dropIn {
   from { opacity: 0; transform: translateY(-6px); }
   to   { opacity: 1; transform: translateY(0); }
@@ -184,8 +405,8 @@ body {
   text-align: left;
   background: transparent;
   border: none;
-  border-bottom: 1px solid #262626;
-  color: #e6e6e6;
+  border-bottom: 1px solid #1f1f1f;
+  color: var(--text);
   padding: 12px 14px;
   cursor: pointer;
   font-family: inherit;
@@ -195,23 +416,21 @@ body {
 .search-item:last-child { border-bottom: none; }
 .search-item:hover,
 .search-item.active {
-  background: rgba(255, 43, 43, 0.15);
-  color: #fff;
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
   padding-left: 20px;
-  border-left: 3px solid #ff2b2b;
+  border-left: 3px solid var(--accent);
 }
 .search-item .search-avatar {
   flex-shrink: 0;
   width: 28px; height: 28px;
   border-radius: 50%;
-  border: 1px solid #ff2b2b;
+  border: 1px solid var(--accent);
   background: #0f0f0f;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 14px;
   overflow: hidden;
-  box-shadow: 0 0 6px rgba(255,43,43,0.4);
 }
 .search-item .search-avatar img { width: 100%; height: 100%; object-fit: cover; }
 .search-item .search-title { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
@@ -220,10 +439,9 @@ body {
   color: #999;
   letter-spacing: 0.15em;
   text-transform: uppercase;
-  white-space: nowrap;
 }
 .search-item mark {
-  background: rgba(255, 43, 43, 0.35);
+  background: color-mix(in srgb, var(--accent) 35%, transparent);
   color: #fff;
   padding: 0 2px;
 }
@@ -235,18 +453,18 @@ body {
   font-size: 0.9rem;
 }
 
-/* Две таблички категорий */
+/* ===== КАТЕГОРИИ ===== */
 .categories {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 20px;
-  margin-bottom: 28px;
+  margin-bottom: 30px;
   align-items: start;
 }
 .category {
   border-radius: 6px;
   overflow: hidden;
-  transition: box-shadow 0.3s ease;
+  transition: box-shadow 0.3s ease, transform 0.25s ease;
 }
 .category-header {
   display: flex;
@@ -254,9 +472,9 @@ body {
   justify-content: space-between;
   width: 100%;
   padding: 16px 20px;
-  font-size: clamp(1rem, 2.5vw, 1.25rem);
+  font-size: clamp(1rem, 2.5vw, 1.2rem);
   font-weight: 800;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   cursor: pointer;
   border: none;
@@ -265,45 +483,48 @@ body {
   transition: all 0.25s ease;
   position: relative;
   overflow: hidden;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.6);
 }
 .category-header::before {
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent);
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
   transform: translateX(-100%);
   transition: transform 0.5s ease;
 }
 .category-header:hover::before { transform: translateX(100%); }
+.category-header::after {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  height: 1px;
+  background: rgba(255,255,255,0.4);
+}
 .category.raiders .category-header {
-  background: linear-gradient(135deg, #c41717 0%, #ff2b2b 100%);
-  box-shadow: 0 0 16px rgba(255,43,43,0.5);
+  background: linear-gradient(135deg, var(--red-dark) 0%, var(--red) 100%);
+  box-shadow: 0 0 18px rgba(255,43,43,0.55);
 }
 .category.raiders .category-header:hover {
-  box-shadow: 0 0 26px rgba(255,43,43,0.85);
+  box-shadow: 0 0 30px rgba(255,43,43,0.9);
   transform: translateY(-1px);
 }
 .category.antiraiders .category-header {
-  background: linear-gradient(135deg, #3b9bd6 0%, #6ec6f5 100%);
-  box-shadow: 0 0 16px rgba(110,198,245,0.5);
+  background: linear-gradient(135deg, var(--blue-dark) 0%, var(--blue) 100%);
+  box-shadow: 0 0 18px rgba(110,198,245,0.55);
 }
 .category.antiraiders .category-header:hover {
-  box-shadow: 0 0 26px rgba(110,198,245,0.85);
+  box-shadow: 0 0 30px rgba(110,198,245,0.9);
   transform: translateY(-1px);
 }
-.category-title {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
+.category-title { display: flex; align-items: center; gap: 10px; }
 .arrow {
   display: inline-block;
-  width: 14px;
-  height: 14px;
+  width: 13px; height: 13px;
   border-right: 3px solid #fff;
   border-bottom: 3px solid #fff;
   transform: rotate(45deg);
-  transition: transform 0.3s ease;
+  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
   margin-top: -4px;
   flex-shrink: 0;
 }
@@ -315,57 +536,49 @@ body {
   max-height: 0;
   overflow: hidden;
   transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-  background: rgba(15, 15, 15, 0.6);
+  background: rgba(13, 13, 13, 0.75);
   border-radius: 0 0 6px 6px;
 }
 .category.open .category-body { max-height: 2000px; }
-.category-inner {
-  padding: 14px;
-  display: grid;
-  gap: 8px;
-}
+.category-inner { padding: 14px; display: grid; gap: 8px; }
 .page-item {
   display: flex;
   align-items: center;
   gap: 12px;
   padding: 12px 14px;
-  background: rgba(255,255,255,0.03);
-  border: 1px solid #333;
+  background: rgba(255,255,255,0.025);
+  border: 1px solid #2c2c2c;
   border-radius: 4px;
   cursor: pointer;
-  color: #e6e6e6;
+  color: var(--text);
   font-size: 0.95rem;
   font-family: inherit;
   text-align: left;
   width: 100%;
   transition: all 0.2s ease;
-  opacity: 0;
-  transform: translateY(6px);
-  animation: itemIn 0.35s ease forwards;
+  position: relative;
 }
-.category.open .page-item { animation: itemIn 0.35s ease forwards; }
-.category.open .page-item:nth-child(1) { animation-delay: 0.05s; }
-.category.open .page-item:nth-child(2) { animation-delay: 0.10s; }
-.category.open .page-item:nth-child(3) { animation-delay: 0.15s; }
-.category.open .page-item:nth-child(4) { animation-delay: 0.20s; }
-.category.open .page-item:nth-child(5) { animation-delay: 0.25s; }
-.category.open .page-item:nth-child(6) { animation-delay: 0.30s; }
-@keyframes itemIn {
-  to { opacity: 1; transform: translateY(0); }
+.page-item::before {
+  content: "";
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 2px;
+  background: transparent;
+  transition: background 0.2s ease;
 }
 .page-item:hover {
-  background: rgba(255,255,255,0.08);
-  border-color: #ff2b2b;
+  background: rgba(255,255,255,0.07);
+  border-color: var(--red);
   transform: translateX(3px);
 }
-.category.antiraiders .page-item:hover {
-  border-color: #6ec6f5;
-}
+.page-item:hover::before { background: var(--red); }
+.category.antiraiders .page-item:hover { border-color: var(--blue); }
+.category.antiraiders .page-item:hover::before { background: var(--blue); }
 .page-avatar-sm {
   flex-shrink: 0;
   width: 32px; height: 32px;
   border-radius: 50%;
-  border: 1px solid #ff2b2b;
+  border: 1px solid var(--red);
   background: #0f0f0f;
   display: flex;
   align-items: center;
@@ -374,141 +587,154 @@ body {
   overflow: hidden;
   transition: box-shadow 0.2s ease, transform 0.2s ease;
 }
-.category.antiraiders .page-avatar-sm { border-color: #6ec6f5; }
+.category.antiraiders .page-avatar-sm { border-color: var(--blue); }
 .page-item:hover .page-avatar-sm {
-  box-shadow: 0 0 10px rgba(255,43,43,0.7);
-  transform: scale(1.06);
+  box-shadow: 0 0 12px var(--red);
+  transform: scale(1.08);
 }
 .category.antiraiders .page-item:hover .page-avatar-sm {
-  box-shadow: 0 0 10px rgba(110,198,245,0.8);
+  box-shadow: 0 0 12px var(--blue);
 }
 .page-avatar-sm img { width: 100%; height: 100%; object-fit: cover; }
-.page-item-name {
-  font-weight: 600;
-  letter-spacing: 0.03em;
+.page-item-name { font-weight: 600; letter-spacing: 0.03em; }
+.page-item-cat {
+  margin-left: auto;
+  font-size: 0.65rem;
+  color: #666;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
 }
 
-/* Контент */
+/* ===== КОНТЕНТ ===== */
 .content { min-height: 400px; }
 .framed {
   position: relative;
   border: 1px solid #fff;
-  padding: 28px;
-  background: rgba(15, 15, 15, 0.55);
-  backdrop-filter: blur(2px);
-  -webkit-backdrop-filter: blur(2px);
+  padding: 30px 28px;
+  background: rgba(13, 13, 13, 0.62);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
   color: #fff;
-  line-height: 1.6;
+  line-height: 1.65;
   min-height: 300px;
-  animation: slideRight 0.6s 0.15s ease both;
-}
-@keyframes slideRight {
-  from { opacity: 0; transform: translateX(14px); }
-  to   { opacity: 1; transform: translateX(0); }
+  box-shadow: inset 0 0 0 1px rgba(255,43,43,0.08), 0 0 40px rgba(0,0,0,0.6);
 }
 .framed::before,
 .framed::after {
   content: "";
   position: absolute;
-  width: 14px;
-  height: 14px;
-  border: 2px solid #ff2b2b;
+  width: 18px; height: 18px;
+  border: 2px solid var(--accent);
   pointer-events: none;
   transition: all 0.3s ease;
+  filter: drop-shadow(0 0 6px var(--accent));
 }
 .framed::before {
-  top: -1px; left: -1px;
+  top: -2px; left: -2px;
   border-right: none; border-bottom: none;
 }
 .framed::after {
-  bottom: -1px; right: -1px;
+  bottom: -2px; right: -2px;
   border-left: none; border-top: none;
 }
 .framed:hover::before,
 .framed:hover::after {
-  width: 26px;
-  height: 26px;
-  box-shadow: 0 0 14px rgba(255, 43, 43, 0.7);
+  width: 32px; height: 32px;
+  filter: drop-shadow(0 0 12px var(--accent));
 }
-.content-anim {
-  animation: contentIn 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both;
-}
+
+.content-anim { animation: contentIn 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
 @keyframes contentIn {
   from { opacity: 0; transform: translateY(10px) scale(0.99); filter: blur(2px); }
   to   { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
 }
-.content-anim.fade-out {
-  animation: contentOut 0.25s ease both;
-}
+.content-anim.fade-out { animation: contentOut 0.25s ease both; }
 @keyframes contentOut {
-  from { opacity: 1; transform: translateY(0); filter: blur(0); }
-  to   { opacity: 0; transform: translateY(-8px) ; filter: blur(3px); }
+  from { opacity: 1; transform: translateY(0); }
+  to   { opacity: 0; transform: translateY(-8px); filter: blur(3px); }
 }
 
 .page-hero {
   display: flex;
   align-items: flex-start;
-  gap: 18px;
-  margin-bottom: 22px;
+  gap: 20px;
+  margin-bottom: 24px;
+  padding-bottom: 20px;
+  border-bottom: 1px dashed #333;
 }
 .page-avatar {
   flex-shrink: 0;
-  width: 72px; height: 72px;
+  width: 76px; height: 76px;
   border-radius: 50%;
-  border: 2px solid #ff2b2b;
+  border: 2px solid var(--accent);
   background: #0f0f0f;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 34px;
+  font-size: 36px;
   overflow: hidden;
-  box-shadow:
-    0 0 16px rgba(255,43,43,0.6),
-    0 0 32px rgba(255,43,43,0.25);
+  box-shadow: 0 0 16px var(--accent), 0 0 32px var(--accent);
   animation: avatarPulse 3s ease-in-out infinite;
+  position: relative;
+}
+/* Для кликабельной «секретной» аватарки */
+.page-avatar.clickable {
+  cursor: pointer;
+}
+.page-avatar.clickable::after {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: 50%;
+  border: 1px dashed var(--accent);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  animation: rotateRing 6s linear infinite;
+}
+.page-avatar.clickable:hover::after { opacity: 1; }
+.page-avatar.clickable:hover {
+  animation: avatarPulse 3s ease-in-out infinite, avatarShake 0.3s infinite;
+}
+@keyframes rotateRing {
+  from { transform: rotate(0); }
+  to   { transform: rotate(360deg); }
+}
+@keyframes avatarShake {
+  0%, 100% { transform: translate(0,0); }
+  50%      { transform: translate(1px, -1px); }
 }
 @keyframes avatarPulse {
-  0%, 100% { box-shadow: 0 0 16px rgba(255,43,43,0.6), 0 0 32px rgba(255,43,43,0.25); }
-  50%      { box-shadow: 0 0 22px rgba(255,43,43,0.9), 0 0 44px rgba(255,43,43,0.45); }
+  0%, 100% { box-shadow: 0 0 16px var(--accent), 0 0 32px var(--accent); }
+  50%      { box-shadow: 0 0 24px var(--accent), 0 0 48px var(--accent); }
 }
 .page-avatar img { width: 100%; height: 100%; object-fit: cover; }
 .page-heading { flex: 1; min-width: 0; }
 .page-heading h2 {
-  color: #ff2b2b;
-  font-size: clamp(1.3rem, 4vw, 1.8rem);
-  letter-spacing: 0.06em;
+  color: var(--accent);
+  font-size: clamp(1.3rem, 4vw, 1.9rem);
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   word-break: break-word;
+  text-shadow: 0 0 10px var(--accent);
 }
 .page-heading h2::after {
   content: "";
   display: block;
-  width: 60px;
-  height: 2px;
-  background: #ff2b2b;
+  width: 64px; height: 2px;
+  background: var(--accent);
   margin-top: 8px;
-  box-shadow: 0 0 10px rgba(255, 43, 43, 0.8);
-  animation: lineGrow 0.5s ease both;
+  box-shadow: 0 0 10px var(--accent);
 }
 .page-heading .page-cat {
   font-size: 0.72rem;
-  color: #999;
-  letter-spacing: 0.2em;
+  color: var(--muted);
+  letter-spacing: 0.22em;
   text-transform: uppercase;
-  margin-top: 6px;
-}
-@keyframes lineGrow {
-  from { width: 0; }
-  to   { width: 60px; }
+  margin-top: 8px;
 }
 
 /* Мини-таблички */
-.page-badges {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 12px;
-}
+.page-badges { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
 .badge {
   display: inline-flex;
   align-items: center;
@@ -518,125 +744,315 @@ body {
   text-transform: uppercase;
   padding: 5px 10px;
   border-radius: 4px;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.55);
   border: 1px solid #444;
-  color: #e6e6e6;
   white-space: nowrap;
-  transition: all 0.2s ease;
 }
-.badge .badge-label {
-  color: #888;
-  font-weight: 600;
-}
-.badge .badge-value {
-  color: #fff;
-  font-weight: 700;
-}
-.badge.status-alive {
-  border-color: #22c55e;
-  box-shadow: 0 0 8px rgba(34,197,94,0.35);
-}
-.badge.status-alive .badge-value { color: #22c55e; }
-.badge.status-dead {
-  border-color: #ef4444;
-  box-shadow: 0 0 8px rgba(239,68,68,0.35);
-}
+.badge .badge-label { color: #888; font-weight: 600; }
+.badge .badge-value { color: #fff; font-weight: 700; }
+.badge.status-alive { border-color: var(--green); box-shadow: 0 0 10px rgba(34,197,94,0.4); }
+.badge.status-alive .badge-value { color: var(--green); }
+.badge.status-dead { border-color: #ef4444; box-shadow: 0 0 10px rgba(239,68,68,0.4); }
 .badge.status-dead .badge-value { color: #ef4444; }
-.badge.status-unknown {
-  border-color: #eab308;
-  box-shadow: 0 0 8px rgba(234,179,8,0.35);
-}
-.badge.status-unknown .badge-value { color: #eab308; }
-.badge.owner {
-  border-color: #ff2b2b;
-  box-shadow: 0 0 8px rgba(255,43,43,0.35);
-}
-.badge.owner .badge-value { color: #ff2b2b; }
+.badge.status-unknown { border-color: var(--yellow); box-shadow: 0 0 10px rgba(234,179,8,0.4); }
+.badge.status-unknown .badge-value { color: var(--yellow); }
+.badge.owner { border-color: var(--accent); box-shadow: 0 0 10px var(--accent); }
+.badge.owner .badge-value { color: var(--accent); }
 
-.framed p { margin-bottom: 12px; color: #eaeaea; word-wrap: break-word; }
-.framed .test-text {
-  font-size: clamp(1rem, 3vw, 1.25rem);
-  font-weight: 700;
-  color: #fff;
-  margin: 20px 0;
-  text-shadow: 0 0 12px rgba(255, 255, 255, 0.4);
-}
-
-/* Картинки внутри текста */
+.framed p { margin-bottom: 14px; color: #e3e3e3; word-wrap: break-word; }
 .framed img {
   display: block;
-  max-width: 100%;
-  height: auto;
-  margin: 16px auto;
-  border: 1px solid #ff2b2b;
+  max-width: 100%; height: auto;
+  margin: 18px auto;
+  border: 1px solid var(--accent);
   border-radius: 4px;
-  box-shadow: 0 0 14px rgba(255,43,43,0.5);
+  box-shadow: 0 0 18px var(--accent);
 }
 
 .site-footer {
   text-align: center;
-  color: #555;
+  color: #444;
   font-size: 0.8rem;
-  letter-spacing: 0.2em;
-  margin-top: 40px;
+  letter-spacing: 0.25em;
+  margin-top: 46px;
+  text-transform: uppercase;
+}
+.site-footer .dot { color: var(--accent); animation: blink 1.4s steps(2, start) infinite; }
+
+/* =====================================================
+   ЭКРАН ВЫСТРЕЛА → ПАДЕНИЕ КАМЕРЫ → «ПОЗОРНАЯ СТОРОНА»
+   ===================================================== */
+.shame-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  display: none;
+  pointer-events: none;
+}
+.shame-overlay.active { display: block; }
+
+/* Затемнение */
+.shame-dim {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0);
+  transition: background 1.2s ease;
+}
+.shame-overlay.go .shame-dim { background: rgba(0,0,0,0.85); }
+
+/* Вспышка от выстрела */
+.shame-flash {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 45%, #fff 0%, #ffb0b0 15%, transparent 55%);
+  opacity: 0;
+  pointer-events: none;
+}
+.shame-overlay.fire .shame-flash {
+  animation: flash 0.35s ease-out;
+}
+@keyframes flash {
+  0%   { opacity: 1; }
+  100% { opacity: 0; }
 }
 
-/* =========================================================
-   АДАПТИВ
-   ========================================================= */
-@media (max-width: 820px) {
-  .categories { grid-template-columns: 1fr; gap: 14px; }
-  .framed { padding: 22px 18px; }
-  .framed h2 { font-size: 1.4rem; }
-  .page-avatar { width: 64px; height: 64px; font-size: 30px; }
+/* Тряска камеры */
+.shame-shake {
+  position: absolute;
+  inset: 0;
+  animation: none;
 }
+.shame-overlay.fire .shame-shake {
+  animation: camShake 0.45s cubic-bezier(0.36, 0.07, 0.19, 0.97);
+}
+@keyframes camShake {
+  10%, 90% { transform: translate(-2px, 1px) rotate(-0.4deg); }
+  20%, 80% { transform: translate(4px, -2px) rotate(0.5deg); }
+  30%, 50%, 70% { transform: translate(-6px, 2px) rotate(-0.7deg); }
+  40%, 60% { transform: translate(6px, -2px) rotate(0.6deg); }
+}
+
+/* «Выстрел» — тонкая белая полоса + круг */
+.shame-bullet {
+  position: absolute;
+  top: 45%; left: 50%;
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow:
+    0 0 20px #fff,
+    0 0 40px #ff2b2b,
+    0 0 80px #ff2b2b;
+  transform: translate(-50%, -50%) scale(0);
+  pointer-events: none;
+}
+.shame-overlay.fire .shame-bullet {
+  animation: bulletIn 0.5s ease-out forwards;
+}
+@keyframes bulletIn {
+  0%   { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+  30%  { transform: translate(-50%, -50%) scale(1.6); opacity: 1; }
+  60%  { transform: translate(-50%, -50%) scale(0.9); opacity: 1; }
+  100% { transform: translate(-50%, -50%) scale(40); opacity: 0; }
+}
+
+/* Тёмная карточка позора */
+.shame-card {
+  position: absolute;
+  left: 50%;
+  bottom: -100%;
+  transform: translateX(-50%) translateY(100px);
+  width: min(640px, 92vw);
+  max-height: 78vh;
+  overflow-y: auto;
+  padding: 40px 32px 90px;
+  background: linear-gradient(180deg, #120000 0%, #1a0000 40%, #2b0000 100%);
+  border: 1px solid #ff2b2b;
+  box-shadow:
+    0 0 40px rgba(255,0,0,0.5),
+    0 0 80px rgba(255,0,0,0.25),
+    inset 0 0 60px rgba(255,0,0,0.08);
+  border-radius: 8px;
+  transition: transform 0.9s cubic-bezier(0.16, 1, 0.3, 1), bottom 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: auto;
+}
+.shame-overlay.go .shame-card {
+  bottom: 6vh;
+  transform: translateX(-50%) translateY(0);
+}
+.shame-card h2 {
+  color: #ff2b2b;
+  font-size: clamp(1.3rem, 4vw, 1.9rem);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 18px;
+  text-shadow: 0 0 14px rgba(255,43,43,0.8);
+  text-align: center;
+}
+.shame-card p {
+  color: #e7d0d0;
+  font-size: 1rem;
+  line-height: 1.7;
+  margin-bottom: 20px;
+}
+.shame-card .shame-stamp {
+  display: inline-block;
+  color: #ff2b2b;
+  font-weight: 900;
+  font-size: clamp(1.1rem, 3.5vw, 1.6rem);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  text-shadow:
+    0 0 12px rgba(255,43,43,1),
+    0 0 28px rgba(255,43,43,0.7);
+  animation: stampPulse 1.4s ease-in-out infinite;
+}
+@keyframes stampPulse {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.05); }
+}
+
+/* Пылающий низ */
+.shame-flames {
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  height: 140px;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at 20% 100%, rgba(255,80,0,0.55) 0%, transparent 60%),
+    radial-gradient(ellipse at 50% 100%, rgba(255,0,0,0.7) 0%, transparent 65%),
+    radial-gradient(ellipse at 80% 100%, rgba(255,140,0,0.55) 0%, transparent 60%),
+    linear-gradient(180deg, transparent 0%, rgba(120,0,0,0.5) 60%, rgba(60,0,0,0.9) 100%);
+  animation: flamesMove 2.4s ease-in-out infinite;
+  filter: blur(6px);
+  opacity: 0;
+  transition: opacity 0.8s ease 0.5s;
+}
+.shame-overlay.go .shame-flames { opacity: 1; }
+@keyframes flamesMove {
+  0%, 100% { transform: scaleY(1) translateY(0); }
+  50%      { transform: scaleY(1.15) translateY(-6px); }
+}
+
+/* Красная кнопка «Зайти» */
+.shame-enter {
+  position: absolute;
+  left: 50%;
+  bottom: -140px;
+  transform: translateX(-50%);
+  z-index: 10;
+  padding: 16px 42px;
+  font-family: inherit;
+  font-size: 1.05rem;
+  font-weight: 900;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: #fff;
+  background: linear-gradient(135deg, #a30000 0%, #ff2b2b 100%);
+  border: 2px solid #ff5a5a;
+  border-radius: 6px;
+  cursor: pointer;
+  box-shadow:
+    0 0 24px rgba(255,0,0,0.7),
+    0 0 48px rgba(255,0,0,0.4),
+    inset 0 0 20px rgba(255,255,255,0.1);
+  transition: all 0.4s ease;
+  opacity: 0;
+}
+.shame-overlay.go .shame-enter {
+  bottom: 20px;
+  opacity: 1;
+  transition: all 0.5s ease 1s;
+}
+.shame-enter:hover {
+  background: linear-gradient(135deg, #cc0000 0%, #ff4444 100%);
+  box-shadow:
+    0 0 36px rgba(255,0,0,1),
+    0 0 72px rgba(255,0,0,0.6),
+    inset 0 0 28px rgba(255,255,255,0.2);
+  transform: translateX(-50%) scale(1.05);
+}
+.shame-enter:active {
+  transform: translateX(-50%) scale(0.98);
+}
+
+/* Плашка "ПОЗОРНЫЕ СТОРОНЫ" — карточка после кнопки */
+.shame-details {
+  margin-top: 24px;
+  padding: 24px 20px;
+  background: rgba(0,0,0,0.6);
+  border: 1px solid #ff2b2b;
+  border-radius: 6px;
+  box-shadow: inset 0 0 24px rgba(255,0,0,0.15);
+  opacity: 0;
+  max-height: 0;
+  overflow: hidden;
+  transition: opacity 0.6s ease, max-height 0.6s ease, padding 0.6s ease;
+}
+.shame-details.open {
+  opacity: 1;
+  max-height: 800px;
+  padding: 24px 20px;
+}
+
+/* Кнопка закрытия */
+.shame-close {
+  position: absolute;
+  top: 12px; right: 14px;
+  width: 34px; height: 34px;
+  border: 1px solid #ff2b2b;
+  background: rgba(0,0,0,0.5);
+  color: #ff2b2b;
+  border-radius: 50%;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  z-index: 20;
+}
+.shame-close:hover {
+  background: #ff2b2b;
+  color: #fff;
+  box-shadow: 0 0 16px rgba(255,43,43,1);
+  transform: rotate(90deg);
+}
+
+/* При удержании открытого оверлея — приглушаем шум и сканы */
+body.shame-open #noise-canvas { opacity: 0.06; }
+body.shame-open { overflow: hidden; }
 
 @media (max-width: 560px) {
-  .page { padding: 24px 12px 40px; }
-  .title {
-    font-size: clamp(1.5rem, 9vw, 2.4rem);
-    letter-spacing: 0.05em;
-  }
-  .subtitle { font-size: 0.68rem; letter-spacing: 0.2em; }
-
-  .search-wrap { margin-top: 16px; }
-  .search-input {
-    padding: 11px 12px 11px 38px;
-    font-size: 0.9rem;
-    background-position: 12px center;
-  }
-  .search-results { max-height: 65vh; }
-  .search-item { padding: 11px 12px; font-size: 0.88rem; }
-  .search-item .cat-tag { display: none; }
-
-  .category-header {
-    padding: 14px 16px;
-    font-size: 1rem;
-    letter-spacing: 0.08em;
-  }
-
-  .page-item { padding: 10px 12px; font-size: 0.9rem; }
-  .page-avatar-sm { width: 28px; height: 28px; font-size: 14px; }
-
-  .page-hero { gap: 12px; margin-bottom: 18px; }
-  .page-avatar {
-    width: 54px; height: 54px;
-    font-size: 24px;
-    border-width: 2px;
-  }
-  .page-heading h2 { font-size: 1.2rem; }
-  .page-heading .page-cat { font-size: 0.65rem; letter-spacing: 0.15em; }
-
-  .badge { font-size: 0.68rem; padding: 4px 8px; }
-
-  .framed { padding: 18px 14px; min-height: 250px; }
-  .framed::before,
-  .framed::after { width: 12px; height: 12px; }
-  .framed .test-text { font-size: 1rem; margin: 16px 0; }
-
-  .site-footer { font-size: 0.7rem; margin-top: 30px; }
+  .shame-card { padding: 28px 20px 110px; }
+  .shame-enter { padding: 14px 30px; font-size: 0.95rem; }
+  .shame-flames { height: 100px; }
 }
 
+/* ===== Адаптив (старое) ===== */
+@media (max-width: 820px) {
+  .categories { grid-template-columns: 1fr; gap: 14px; }
+  .framed { padding: 24px 20px; }
+  .page-avatar { width: 66px; height: 66px; font-size: 30px; }
+}
+@media (max-width: 560px) {
+  .page { padding: 26px 12px 44px; }
+  .title { font-size: clamp(1.5rem, 9vw, 2.4rem); }
+  .subtitle { font-size: 0.66rem; letter-spacing: 0.22em; }
+  .search-wrap { margin-top: 18px; }
+  .search-hint { display: none; }
+  .category-header { padding: 14px 16px; font-size: 1rem; }
+  .page-item { padding: 10px 12px; font-size: 0.9rem; }
+  .page-avatar-sm { width: 28px; height: 28px; font-size: 14px; }
+  .page-item-cat { display: none; }
+  .page-hero { gap: 12px; margin-bottom: 18px; padding-bottom: 16px; }
+  .page-avatar { width: 54px; height: 54px; font-size: 24px; }
+  .page-heading h2 { font-size: 1.2rem; }
+  .badge { font-size: 0.68rem; padding: 4px 8px; }
+  .framed { padding: 18px 14px; min-height: 250px; }
+  .framed::before, .framed::after { width: 12px; height: 12px; }
+  .search-item .cat-tag { display: none; }
+  .theme-toggle { top: 10px; right: 10px; padding: 4px; }
+  .theme-btn { padding: 5px 8px; font-size: 0.65rem; }
+}
 @media (max-width: 380px) {
   .title { font-size: 1.4rem; }
   .page-avatar { width: 46px; height: 46px; font-size: 20px; }
@@ -644,30 +1060,49 @@ body {
   .framed { padding: 16px 12px; }
   .category-header { font-size: 0.9rem; padding: 12px 14px; }
 }
-
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
   }
-  #noise-canvas { display: none; }
+  #noise-canvas, .sweep, #cursor, #cursor-ring { display: none; }
+  body { cursor: default; }
 }
 </style>
 </head>
 <body>
   <canvas id="noise-canvas"></canvas>
   <div class="scanlines"></div>
+  <div class="sweep"></div>
+  <div class="vignette"></div>
+
+  <!-- Курсор-прицел -->
+  <div id="cursor-ring"></div>
+  <div id="cursor"></div>
+
+  <!-- Переключатель темы -->
+  <div class="theme-toggle">
+    <button class="theme-btn active" data-theme-btn="raider">⚔️ Рейдеры</button>
+    <button class="theme-btn" data-theme-btn="antiraider">🛡️ Антирейдеры</button>
+  </div>
 
   <div class="page">
     <header class="site-header">
-      <h1 class="title" data-text="MAX Raid Wiki">MAX Raid Wiki</h1>
-      <p class="subtitle">// рейдеры и антирейдеры MAX</p>
+      <div class="title-line">
+        <h1 class="title" id="main-title" data-text="MAX RAID WIKI">
+          <span class="glitch-layers" aria-hidden="true"></span>
+          MAX <span class="accent">RAID</span> WIKI<span class="cursor-blink"></span>
+        </h1>
+      </div>
+      <p class="subtitle">
+        рейдеры<span class="dot">.</span>антирейдеры<span class="dot">.</span>max
+      </p>
 
       <div class="search-wrap">
         <input type="text" id="search-input" class="search-input"
-               placeholder="Поиск по базе... (Ctrl+K)" autocomplete="off" />
+               placeholder="Поиск по базе..." autocomplete="off" />
+        <span class="search-hint">CTRL+K</span>
         <div class="search-results" id="search-results"></div>
       </div>
     </header>
@@ -675,10 +1110,7 @@ body {
     <div class="categories">
       <section class="category raiders" id="cat-raiders">
         <button class="category-header" data-category="raiders">
-          <span class="category-title">
-            <span class="page-avatar-sm" style="width:24px;height:24px;font-size:13px;border-color:#fff;">⚔️</span>
-            Рейдеры
-          </span>
+          <span class="category-title">⚔️ Рейдеры</span>
           <span class="arrow"></span>
         </button>
         <div class="category-body">
@@ -688,10 +1120,7 @@ body {
 
       <section class="category antiraiders" id="cat-antiraiders">
         <button class="category-header" data-category="antiraiders">
-          <span class="category-title">
-            <span class="page-avatar-sm" style="width:24px;height:24px;font-size:13px;border-color:#fff;">🛡️</span>
-            Антирейдеры
-          </span>
+          <span class="category-title">🛡️ Антирейдеры</span>
           <span class="arrow"></span>
         </button>
         <div class="category-body">
@@ -701,97 +1130,41 @@ body {
     </div>
 
     <main class="content">
-      <div class="framed" id="content-frame"></div>
+      <div class="framed" id="content-frame">
+        <p style="color:#888">Загрузка данных...</p>
+      </div>
     </main>
 
     <footer class="site-footer">
-      <span>© MAX Raid Wiki</span>
+      <span>© MAX Raid Wiki</span><span class="dot">.</span>
     </footer>
   </div>
 
-<script>
-/* ===== Данные вики ===== */
-const WIKI = {
-  raiders: [
-    {
-      id: 'uotb',
-      title: 'UOTB',
-      avatar: 'https://cdn.phototourl.com/free/2026-09-20-f3938c33-1e29-4753-a965-f26629537a3b.jpg',
-      status: 'жив',
-      owner: 'Пабло',
-      content: `
-        <p>UOTB, или же «Union Of The Brash» — первые рейдеры в максе. Данной
-        группировке более 4-ех лет и находились они до MAX'а в Viber и Telegram.
-        Именно с них началось рейдерство в MAX'е.</p>
-      `
-    },
-    {
-      id: 'mars',
-      title: 'MARS',
-      avatar: 'https://cdn.phototourl.com/free/2026-09-20-f93f9e0d-7fc5-4d78-8a91-881dd0d61730.jpg',
-      status: 'жив',
-      owner: 'SPAWN',
-      content: `
-        <p>MARS — крупнейший подклан UOTB, занимается он в основном шпионством,
-        но они также и рейдеры. На данный момент в чате адаптации MARS'а
-        650+ участников.</p>
-      `
-    },
-    {
-      id: 'fiery-empire',
-      title: 'Fiery Empire',
-      avatar: '🔥',
-      status: 'жив',
-      owner: 'FE ASAHI SE',
-      content: `
-        <p>Fiery Empire — это рейдеры, которые раньше были просто чатом. Раньше
-        они назывались «Британской Империи» и зависли от НИЕ, но потом пришёл Cold,
-        и сделал их свободными, после чего они стали рейдерами. Самый крутой именно
-        в личных достижениях владелец. На данный момент в их чате примерно
-        400+ участников.</p>
-      `
-    }
-  ],
-  antiraiders: [
-    {
-      id: 'ftaj',
-      title: 'FTAJ',
-      avatar: '🛡️',
-      status: 'жив',
-      owner: 'даник',
-      content: `
-        <p>FTAJ — вторые рейдеры (на данный момент антирейдеры) в MAX'е.
-        Сейчас занимаются антирейдерством, уничтожают неизвестные и мелкие
-        рейдерские группировки, а также конфликтуют с существуещими крупными.</p>
-      `
-    },
-    {
-      id: 'tspr',
-      title: 'ЦПР',
-      avatar: 'https://cdn.phototourl.com/free/2026-09-20-490ac874-41a7-4be0-8ea7-ce6cb4c60c77.jpg',
-      status: 'жив',
-      owner: 'shalow dern (шейд)',
-      content: `
-        <p>ЦПР, или же Центр Противодействия Рейдерам — первая антирейдерская
-        группировка. ЦПР создавался просто канал против обмана со стороны UOTB,
-        но потом перерос в более крупный проект по сливам рейдеров, и их уничтожению.
-        Были созданы в один день с KR.</p>
-      `
-    },
-    {
-      id: 'kr',
-      title: 'KR',
-      avatar: '✨',
-      status: 'жив',
-      owner: 'user (Крутой Челик)',
-      content: `
-        <p>KR — бывшие рейдеры, на данный момент антирейдеры. Самые известные
-        свежаки среди всех. Были созданы в один день с ЦПР.</p>
-      `
-    }
-  ]
-};
+  <!-- Оверлей "Позорная сторона" -->
+  <div class="shame-overlay" id="shame-overlay">
+    <div class="shame-shake">
+      <div class="shame-dim"></div>
+      <div class="shame-flash"></div>
+      <div class="shame-bullet"></div>
+    </div>
+    <div class="shame-flames"></div>
 
+    <div class="shame-card" id="shame-card">
+      <button class="shame-close" id="shame-close" aria-label="Закрыть">✕</button>
+      <h2 id="shame-title">—</h2>
+      <p id="shame-text">—</p>
+      <div class="shame-details" id="shame-details">
+        <h2 id="shame-details-title">—</h2>
+        <p id="shame-details-text">—</p>
+        <div class="shame-stamp" id="shame-stamp">—</div>
+      </div>
+    </div>
+
+    <button class="shame-enter" id="shame-enter">ЗАЙТИ</button>
+  </div>
+
+<script>
+let WIKI = null;
 const CATEGORY_LABEL = { raiders: 'Рейдеры', antiraiders: 'Антирейдеры' };
 
 const contentFrame = document.getElementById('content-frame');
@@ -802,7 +1175,90 @@ const searchResults = document.getElementById('search-results');
 const catRaiders = document.getElementById('cat-raiders');
 const catAntiraiders = document.getElementById('cat-antiraiders');
 
-/* Аватарки */
+/* ============ ЭЛЕМЕНТЫ ПОЗОРНОГО ОВЕРЛЕЯ ============ */
+const shameOverlay = document.getElementById('shame-overlay');
+const shameEnter = document.getElementById('shame-enter');
+const shameClose = document.getElementById('shame-close');
+const shameTitle = document.getElementById('shame-title');
+const shameText = document.getElementById('shame-text');
+const shameDetails = document.getElementById('shame-details');
+const shameDetailsTitle = document.getElementById('shame-details-title');
+const shameDetailsText = document.getElementById('shame-details-text');
+const shameStamp = document.getElementById('shame-stamp');
+
+/* ============ ТЕМА ============ */
+const themeBtns = document.querySelectorAll('[data-theme-btn]');
+function setTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  themeBtns.forEach(b => b.classList.toggle('active', b.dataset.themeBtn === theme));
+  try { localStorage.setItem('raidwiki-theme', theme); } catch {}
+}
+themeBtns.forEach(btn => {
+  btn.addEventListener('click', () => setTheme(btn.dataset.themeBtn));
+});
+(function initTheme() {
+  let saved = null;
+  try { saved = localStorage.getItem('raidwiki-theme'); } catch {}
+  setTheme(saved === 'antiraider' ? 'antiraider' : 'raider');
+})();
+
+/* ============ КУРСОР-ПРИЦЕЛ ============ */
+const cursor = document.getElementById('cursor');
+const cursorRing = document.getElementById('cursor-ring');
+let mx = window.innerWidth / 2, my = window.innerHeight / 2;
+let rx = mx, ry = my;
+let cursorEnabled = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+if (!cursorEnabled) document.body.classList.add('cursor-off');
+
+document.addEventListener('mousemove', (e) => {
+  mx = e.clientX; my = e.clientY;
+  cursor.style.left = mx + 'px';
+  cursor.style.top  = my + 'px';
+});
+(function ringLoop() {
+  rx += (mx - rx) * 0.18;
+  ry += (my - ry) * 0.18;
+  cursorRing.style.left = rx + 'px';
+  cursorRing.style.top  = ry + 'px';
+  requestAnimationFrame(ringLoop);
+})();
+
+/* Увеличение кольца при наведении на кликабельное */
+document.addEventListener('mouseover', (e) => {
+  if (e.target.closest('button, a, input, .page-avatar.clickable')) {
+    cursorRing.style.width = '48px';
+    cursorRing.style.height = '48px';
+    cursorRing.style.opacity = '0.9';
+  }
+});
+document.addEventListener('mouseout', (e) => {
+  if (e.target.closest('button, a, input, .page-avatar.clickable')) {
+    cursorRing.style.width = '34px';
+    cursorRing.style.height = '34px';
+    cursorRing.style.opacity = '0.6';
+  }
+});
+
+/* ============ РЕЙДЕР-ЭФФЕКТ (долгое наведение на заголовок) ============ */
+const mainTitle = document.getElementById('main-title');
+let titleHoverStart = 0;
+let titleTimer = null;
+
+mainTitle.addEventListener('mouseenter', () => {
+  titleHoverStart = Date.now();
+  titleTimer = setInterval(() => {
+    if (Date.now() - titleHoverStart > 1500) {
+      mainTitle.classList.add('raid-active');
+    }
+  }, 200);
+});
+mainTitle.addEventListener('mouseleave', () => {
+  clearInterval(titleTimer);
+  titleHoverStart = 0;
+  mainTitle.classList.remove('raid-active');
+});
+
+/* ============ АВАТАРКИ ============ */
 function isImageUrl(s) {
   return typeof s === 'string' && /^(https?:)?\/\//i.test(s);
 }
@@ -814,7 +1270,7 @@ function renderAvatar(value, fallback = '❓') {
   return escapeHtml(value);
 }
 
-/* Смена контента */
+/* ============ РЕНДЕР ============ */
 function setContent(html) {
   if (contentFrame.innerHTML.trim()) {
     contentFrame.classList.remove('content-anim');
@@ -834,11 +1290,10 @@ function setContent(html) {
 
 function renderHome() {
   setContent(`
-    <p>Здравствуйте, вы попали на сайт: «MAX Raid Wiki», здесь вы можете ознакомиться
-    со всеми известными рейдерами/антирейдерами приложения "MAX".
-    Если вам интересно знать что-то о них — то вам именно сюда!</p>
+    <p>Здравствуйте, вы попали на сайт «MAX Raid Wiki» — здесь собрана информация
+    обо всех известных рейдерах и антирейдерах приложения MAX.</p>
     <p style="color:#888; margin-top:14px; font-size:0.9rem;">
-      Раскрой категорию сверху или используй поиск, чтобы найти нужного рейдера.
+      Раскрой нужную категорию сверху или воспользуйся поиском.
     </p>
   `);
 }
@@ -872,9 +1327,12 @@ function renderPage(category, pageId) {
     badgesHtml += `</div>`;
   }
 
+  const avatarCls = page.secret ? 'page-avatar clickable' : 'page-avatar';
+  const avatarTitle = page.secret ? 'title="Не нажимай..."' : '';
+
   setContent(`
     <div class="page-hero">
-      <div class="page-avatar">${avatarHtml}</div>
+      <div class="${avatarCls}" ${avatarTitle}>${avatarHtml}</div>
       <div class="page-heading">
         <h2>${escapeHtml(page.title)}</h2>
         <div class="page-cat">${CATEGORY_LABEL[category]}</div>
@@ -883,14 +1341,20 @@ function renderPage(category, pageId) {
     </div>
     ${page.content}
   `);
+
+  /* Если секретная — вешаем клик по аватарке */
+  if (page.secret && page.shame) {
+    const av = contentFrame.querySelector('.page-avatar.clickable');
+    if (av) av.addEventListener('click', () => openShame(page.shame));
+  }
 }
 
-/* Заполнение табличек */
 function fillList(container, category) {
   container.innerHTML = (WIKI[category] || []).map(p => `
     <button class="page-item" data-page="${p.id}" data-category="${category}">
       <span class="page-avatar-sm">${renderAvatar(p.avatar || p.icon)}</span>
       <span class="page-item-name">${escapeHtml(p.title)}</span>
+      <span class="page-item-cat">${CATEGORY_LABEL[category]}</span>
     </button>
   `).join('');
 
@@ -901,17 +1365,12 @@ function fillList(container, category) {
   });
 }
 
-fillList(listRaiders, 'raiders');
-fillList(listAntiraiders, 'antiraiders');
-
-/* Раскрытие/скрытие табличек */
 function toggleCategory(cat) {
   const el = cat === 'raiders' ? catRaiders : catAntiraiders;
   const other = cat === 'raiders' ? catAntiraiders : catRaiders;
   el.classList.toggle('open');
   other.classList.remove('open');
 }
-
 document.querySelectorAll('.category-header').forEach(btn => {
   btn.addEventListener('click', (e) => {
     e.stopPropagation();
@@ -919,7 +1378,7 @@ document.querySelectorAll('.category-header').forEach(btn => {
   });
 });
 
-/* Поиск */
+/* ============ ПОИСК ============ */
 function getAllPages() {
   const all = [];
   for (const cat of Object.keys(WIKI)) {
@@ -927,7 +1386,6 @@ function getAllPages() {
   }
   return all;
 }
-
 function searchPages(query) {
   const q = query.trim().toLowerCase();
   if (!q) return [];
@@ -945,22 +1403,18 @@ function searchPages(query) {
     .sort((a, b) => b.score - a.score)
     .slice(0, 8);
 }
-
 function stripHtml(html) {
   const tmp = document.createElement('div');
   tmp.innerHTML = html;
   return tmp.textContent || '';
 }
-
 function highlight(text, query) {
   if (!query) return escapeHtml(text);
   const safe = escapeHtml(text);
   const q = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   return safe.replace(new RegExp(`(${q})`, 'ig'), '<mark>$1</mark>');
 }
-
 let activeSearchIndex = -1;
-
 function renderSearchResults(query) {
   const results = searchPages(query);
   activeSearchIndex = -1;
@@ -982,7 +1436,6 @@ function renderSearchResults(query) {
     </button>
   `).join('');
   searchResults.classList.add('open');
-
   searchResults.querySelectorAll('.search-item').forEach(btn => {
     btn.addEventListener('click', () => {
       renderPage(btn.dataset.category, btn.dataset.page);
@@ -992,12 +1445,10 @@ function renderSearchResults(query) {
     });
   });
 }
-
 searchInput.addEventListener('input', e => renderSearchResults(e.target.value));
 searchInput.addEventListener('focus', e => {
   if (e.target.value.trim()) searchResults.classList.add('open');
 });
-
 searchInput.addEventListener('keydown', e => {
   const items = searchResults.querySelectorAll('.search-item');
   if (!items.length) return;
@@ -1017,16 +1468,13 @@ searchInput.addEventListener('keydown', e => {
     searchInput.blur();
   }
 });
-
 function updateActive(items) {
   items.forEach((it, i) => it.classList.toggle('active', i === activeSearchIndex));
   items[activeSearchIndex]?.scrollIntoView({ block: 'nearest' });
 }
-
 document.addEventListener('click', e => {
   if (!e.target.closest('.search-wrap')) searchResults.classList.remove('open');
 });
-
 document.addEventListener('keydown', e => {
   if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
     e.preventDefault();
@@ -1044,7 +1492,55 @@ function escapeHtml(str) {
     .replace(/'/g, '&#039;');
 }
 
-/* Шум */
+/* ============ ОТКРЫТИЕ/ЗАКРЫТИЕ ПОЗОРНОЙ СТОРОНЫ ============ */
+function openShame(shame) {
+  /* Заполняем тексты */
+  shameTitle.textContent = shame.title || 'ПОЗОРНАЯ СТОРОНА';
+  shameText.textContent = shame.text || '';
+  shameDetailsTitle.textContent = shame.title || 'ПОЗОРНЫЕ СТОРОНЫ';
+  shameDetailsText.textContent = '';
+  shameStamp.textContent = shame.stamp || 'НЕ СКРЫТЬ!';
+  shameDetails.classList.remove('open');
+
+  /* Сбрасываем анимации */
+  shameOverlay.classList.remove('active', 'fire', 'go');
+  void shameOverlay.offsetWidth;
+
+  /* Показываем */
+  shameOverlay.classList.add('active');
+  document.body.classList.add('shame-open');
+
+  /* Кадр 1: выстрел + вспышка + тряска */
+  requestAnimationFrame(() => {
+    shameOverlay.classList.add('fire');
+  });
+
+  /* Кадр 2: затемнение + падение карточки + пылающий низ */
+  setTimeout(() => {
+    shameOverlay.classList.add('go');
+  }, 450);
+
+  /* Клик по кнопке «Зайти» → раскрываем инфу */
+  shameEnter.onclick = () => {
+    shameDetails.classList.add('open');
+    shameEnter.style.opacity = '0';
+    shameEnter.style.pointerEvents = 'none';
+  };
+}
+
+function closeShame() {
+  shameOverlay.classList.remove('active', 'fire', 'go');
+  document.body.classList.remove('shame-open');
+  shameEnter.style.opacity = '';
+  shameEnter.style.pointerEvents = '';
+  shameDetails.classList.remove('open');
+}
+shameClose.addEventListener('click', closeShame);
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && shameOverlay.classList.contains('active')) closeShame();
+});
+
+/* ============ ШУМ ============ */
 (function initNoise() {
   const canvas = document.getElementById('noise-canvas');
   const ctx = canvas.getContext('2d');
@@ -1060,7 +1556,7 @@ function escapeHtml(str) {
       for (let i = 0; i < d.length; i += 4) {
         const v = (Math.random() * 255) | 0;
         d[i] = d[i + 1] = d[i + 2] = v;
-        d[i + 3] = 40;
+        d[i + 3] = 34;
       }
       ctx.putImageData(img, 0, 0);
     }
@@ -1072,8 +1568,20 @@ function escapeHtml(str) {
   draw();
 })();
 
-/* Старт */
-renderHome();
+/* ============ ЗАГРУЗКА ============ */
+async function loadWiki() {
+  try {
+    const res = await fetch('/api/wiki', { cache: 'no-store' });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    WIKI = await res.json();
+    fillList(listRaiders, 'raiders');
+    fillList(listAntiraiders, 'antiraiders');
+    renderHome();
+  } catch (err) {
+    contentFrame.innerHTML = `<h2>Ошибка</h2><p>Не удалось загрузить данные вики. Обнови страницу.</p>`;
+  }
+}
+loadWiki();
 </script>
 </body>
 </html>
