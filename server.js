@@ -17,7 +17,7 @@ const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'neaboba228';
 const SESSION_SECRET = process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex');
 const SITE_COOKIE = 'raidwiki_session';
 const ADMIN_COOKIE = 'raidwiki_admin';
-const COOKIE_MAX_AGE = 1000 * 60 * 60 * 24 * 7; // 7 дней
+const COOKIE_MAX_AGE = 1000 * 60 * 60 * 24 * 7;
 
 if (!SUPABASE_URL || !SUPABASE_ANON_KEY || !SUPABASE_SERVICE_KEY) {
   console.error('Не заданы SUPABASE_URL / SUPABASE_ANON_KEY / SUPABASE_SERVICE_KEY');
@@ -143,13 +143,12 @@ function clearCookie(res, name) {
 }
 function isSiteAuthed(req) {
   const cookies = parseCookies(req.headers.cookie);
-  const session = verifySession(cookies[SITE_COOKIE]);
-  return !!session;
+  return !!verifySession(cookies[SITE_COOKIE]);
 }
 function isAdminAuthed(req) {
   const cookies = parseCookies(req.headers.cookie);
-  const session = verifySession(cookies[ADMIN_COOKIE]);
-  return !!session && session.role === 'admin';
+  const s = verifySession(cookies[ADMIN_COOKIE]);
+  return !!s && s.role === 'admin';
 }
 function safeCompare(a, b) {
   const ab = Buffer.from(String(a));
@@ -237,7 +236,7 @@ async function seedIfEmpty() {
 }
 
 /* =====================================================
-   ПУБЛИЧНЫЕ РОУТЫ — ПАРОЛЬ САЙТА
+   ПУБЛИЧНОЕ API
    ===================================================== */
 app.post('/api/login', rateLimit(30), (req, res) => {
   const { password } = req.body || {};
@@ -258,7 +257,7 @@ app.post('/api/logout', (req, res) => {
 });
 
 app.get('/api/session', (req, res) => {
-  res.json({ authed: isSiteAuthed(req) });
+  res.json({ authed: isSiteAuthed(req), admin: isAdminAuthed(req) });
 });
 
 app.get('/api/wiki', rateLimit(120), async (req, res) => {
@@ -293,9 +292,64 @@ app.get('/api/wiki', rateLimit(120), async (req, res) => {
 });
 
 /* =====================================================
-   АДМИНКА — ОТДЕЛЬНАЯ СЕССИЯ
-   -----------------------------------------------------
-   Пароль: process.env.ADMIN_PASSWORD или 'neaboba228'
+   КОММЕНТАРИИ
+   ===================================================== */
+app.get('/api/comments/:category/:pageId', rateLimit(120), async (req, res) => {
+  if (!isSiteAuthed(req)) return res.status(401).json({ error: 'Не авторизован' });
+  const { category, pageId } = req.params;
+  try {
+    const { data, error } = await supabaseRead
+      .from('comments')
+      .select('id, author, text, created_at')
+      .eq('page_category', category)
+      .eq('page_id', pageId)
+      .order('created_at', { ascending: true })
+      .limit(200);
+    if (error) throw error;
+    res.set('Cache-Control', 'no-store');
+    res.json(data || []);
+  } catch (e) {
+    res.status(500).json({ error: 'Ошибка базы: ' + (e.message || 'unknown') });
+  }
+});
+
+app.post('/api/comments/:category/:pageId', rateLimit(20), async (req, res) => {
+  if (!isSiteAuthed(req)) return res.status(401).json({ error: 'Не авторизован' });
+  const { category, pageId } = req.params;
+  const { author, text } = req.body || {};
+
+  if (!text || typeof text !== 'string' || !text.trim()) {
+    return res.status(400).json({ error: 'Текст комментария обязателен' });
+  }
+  if (text.length > 1000) {
+    return res.status(400).json({ error: 'Слишком длинный комментарий (макс. 1000)' });
+  }
+  if (!['raiders', 'antiraiders'].includes(category)) {
+    return res.status(400).json({ error: 'Неверная категория' });
+  }
+
+  const row = {
+    page_category: category,
+    page_id: pageId,
+    author: (author && String(author).trim().slice(0, 40)) || 'Аноним',
+    text: String(text).trim()
+  };
+
+  try {
+    const { data, error } = await supabaseAdmin
+      .from('comments')
+      .insert(row)
+      .select()
+      .single();
+    if (error) throw error;
+    res.json({ ok: true, item: data });
+  } catch (e) {
+    res.status(500).json({ error: 'Ошибка базы: ' + (e.message || 'unknown') });
+  }
+});
+
+/* =====================================================
+   АДМИНКА
    ===================================================== */
 app.post('/api/admin/login', rateLimit(20), (req, res) => {
   const { password } = req.body || {};
@@ -319,7 +373,6 @@ app.get('/api/admin/session', (req, res) => {
   res.json({ authed: isAdminAuthed(req) });
 });
 
-/* Полный список статей для админки (включая приватные поля) */
 app.get('/api/admin/wiki', rateLimit(120), async (req, res) => {
   if (!isAdminAuthed(req)) return res.status(401).json({ error: 'Не авторизован' });
   try {
@@ -336,7 +389,6 @@ app.get('/api/admin/wiki', rateLimit(120), async (req, res) => {
   }
 });
 
-/* Создать/обновить статью */
 app.post('/api/admin/wiki', rateLimit(60), async (req, res) => {
   if (!isAdminAuthed(req)) return res.status(401).json({ error: 'Не авторизован' });
   const body = req.body || {};
@@ -366,7 +418,6 @@ app.post('/api/admin/wiki', rateLimit(60), async (req, res) => {
   };
 
   try {
-    /* upsert по (category, page_id) — считаем их уникальной парой */
     const { data: existing } = await supabaseAdmin
       .from('wiki')
       .select('id')
@@ -396,7 +447,6 @@ app.post('/api/admin/wiki', rateLimit(60), async (req, res) => {
   }
 });
 
-/* Удалить статью */
 app.delete('/api/admin/wiki/:category/:pageId', rateLimit(60), async (req, res) => {
   if (!isAdminAuthed(req)) return res.status(401).json({ error: 'Не авторизован' });
   const { category, pageId } = req.params;
@@ -414,9 +464,10 @@ app.delete('/api/admin/wiki/:category/:pageId', rateLimit(60), async (req, res) 
 });
 
 /* =====================================================
-   ОТДАЧА index.html
+   ОТДАЧА СТРАНИЦ
    ===================================================== */
 const INDEX = path.join(__dirname, 'index.html');
+const ADMIN = path.join(__dirname, 'admin.html');
 
 app.use((req, res, next) => {
   res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
@@ -427,6 +478,8 @@ app.use((req, res, next) => {
 
 app.get('/', (req, res) => res.sendFile(INDEX));
 app.get('/index.html', (req, res) => res.sendFile(INDEX));
+app.get('/admin', (req, res) => res.sendFile(ADMIN));
+app.get('/admin.html', (req, res) => res.sendFile(ADMIN));
 
 app.get('*', (req, res) => {
   if (req.path.startsWith('/api/')) {
@@ -440,6 +493,5 @@ app.get('*', (req, res) => {
    ===================================================== */
 app.listen(PORT, async () => {
   console.log(`MAX Raid Wiki запущен на порту ${PORT}`);
-  console.log(`Пароль админки: ${ADMIN_PASSWORD === 'neaboba228' ? 'по умолчанию (neaboba228)' : 'из переменной окружения'}`);
   await seedIfEmpty();
 });
