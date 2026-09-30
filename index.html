@@ -14,7 +14,6 @@
   --bg-0: #0d0d0d;
   --bg-1: #1a1a1a;
   --bg-2: #202020;
-  --line: #ffffff;
   --text: #e6e6e6;
   --muted: #8a8a8a;
   --green: #22c55e;
@@ -26,12 +25,6 @@ html[data-theme="antiraider"] {
   --accent: var(--blue);
   --accent-dark: var(--blue-dark);
 }
-body, .category-header, .page-heading h2, .badge, .framed,
-.arrow, .page-avatar, .page-avatar-sm, .page-item, .search-item {
-  transition: background-color 0.4s ease, border-color 0.4s ease,
-              box-shadow 0.4s ease, color 0.4s ease, text-shadow 0.4s ease;
-}
-
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 html, body { height: 100%; }
 html { scroll-behavior: smooth; }
@@ -49,7 +42,7 @@ body {
 body.cursor-off { cursor: default; }
 body.cursor-off a, body.cursor-off button, body.cursor-off input { cursor: pointer; }
 
-/* ===== КУРСОР-ПРИЦЕЛ ===== */
+/* Курсор */
 #cursor {
   position: fixed;
   top: 0; left: 0;
@@ -58,7 +51,6 @@ body.cursor-off a, body.cursor-off button, body.cursor-off input { cursor: point
   pointer-events: none;
   z-index: 9999;
   transform: translate(-50%, -50%);
-  transition: width 0.15s ease, height 0.15s ease;
   mix-blend-mode: screen;
 }
 #cursor::before,
@@ -68,16 +60,8 @@ body.cursor-off a, body.cursor-off button, body.cursor-off input { cursor: point
   background: var(--accent);
   box-shadow: 0 0 8px var(--accent);
 }
-#cursor::before {
-  top: 50%; left: -6px; right: -6px;
-  height: 1px;
-  transform: translateY(-50%);
-}
-#cursor::after {
-  left: 50%; top: -6px; bottom: -6px;
-  width: 1px;
-  transform: translateX(-50%);
-}
+#cursor::before { top: 50%; left: -6px; right: -6px; height: 1px; transform: translateY(-50%); }
+#cursor::after { left: 50%; top: -6px; bottom: -6px; width: 1px; transform: translateX(-50%); }
 #cursor-ring {
   position: fixed;
   top: 0; left: 0;
@@ -88,16 +72,13 @@ body.cursor-off a, body.cursor-off button, body.cursor-off input { cursor: point
   z-index: 9998;
   transform: translate(-50%, -50%);
   opacity: 0.6;
-  transition: width 0.2s ease, height 0.2s ease, border-color 0.3s ease, opacity 0.2s ease;
-  box-shadow: 0 0 12px rgba(255,43,43,0.5);
-}
-html[data-theme="antiraider"] #cursor-ring {
-  box-shadow: 0 0 12px rgba(110,198,245,0.5);
+  transition: width 0.2s ease, height 0.2s ease, opacity 0.2s ease;
+  box-shadow: 0 0 12px var(--accent);
 }
 body.cursor-off #cursor,
 body.cursor-off #cursor-ring { display: none; }
 
-/* ===== ФОН ===== */
+/* Фон */
 #noise-canvas {
   position: fixed; inset: 0;
   width: 100%; height: 100%;
@@ -146,33 +127,167 @@ body.cursor-off #cursor-ring { display: none; }
   animation: sweepMove 12s linear infinite;
   opacity: 0.5;
 }
-html[data-theme="antiraider"] .sweep {
-  background: linear-gradient(
-    to bottom,
-    transparent 0%,
-    rgba(110,198,245,0.06) 48%,
-    rgba(110,198,245,0.12) 50%,
-    rgba(110,198,245,0.06) 52%,
-    transparent 100%
-  );
-  background-size: 100% 40vh;
-}
 @keyframes sweepMove {
   0%   { background-position: 0 -40vh; }
   100% { background-position: 0 140vh; }
 }
 
-/* ===== ТЕМА-ПЕРЕКЛЮЧАТЕЛЬ ===== */
-.theme-toggle {
+/* =====================================================
+   ЭКРАН ПАРОЛЯ
+   ===================================================== */
+.lock-screen {
   position: fixed;
-  top: 14px; right: 14px;
+  inset: 0;
+  z-index: 9500;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: radial-gradient(ellipse at center, #1a0000 0%, #0a0a0a 70%);
+  animation: lockFadeIn 0.5s ease both;
+}
+.lock-screen.active { display: flex; }
+@keyframes lockFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.lock-box {
+  position: relative;
+  width: min(420px, 100%);
+  padding: 44px 32px 36px;
+  background: rgba(10, 10, 10, 0.95);
+  border: 1px solid var(--red);
+  border-radius: 8px;
+  box-shadow:
+    0 0 40px rgba(255,0,0,0.4),
+    0 0 80px rgba(255,0,0,0.15),
+    inset 0 0 40px rgba(255,0,0,0.06);
+  text-align: center;
+}
+.lock-box::before,
+.lock-box::after {
+  content: "";
+  position: absolute;
+  width: 18px; height: 18px;
+  border: 2px solid var(--red);
+  filter: drop-shadow(0 0 8px var(--red));
+}
+.lock-box::before { top: -2px; left: -2px; border-right: none; border-bottom: none; }
+.lock-box::after { bottom: -2px; right: -2px; border-left: none; border-top: none; }
+.lock-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  filter: drop-shadow(0 0 12px var(--red));
+  animation: lockPulse 2s ease-in-out infinite;
+}
+@keyframes lockPulse {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.08); }
+}
+.lock-title {
+  color: var(--red);
+  font-size: 1.4rem;
+  font-weight: 900;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  text-shadow: 0 0 14px rgba(255,43,43,0.8);
+}
+.lock-subtitle {
+  color: #888;
+  font-size: 0.8rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  margin-bottom: 26px;
+}
+.lock-input {
+  width: 100%;
+  background: rgba(0,0,0,0.6);
+  border: 1px solid #444;
+  color: #fff;
+  padding: 14px 16px;
+  font-family: inherit;
+  font-size: 1rem;
+  letter-spacing: 0.15em;
+  text-align: center;
+  border-radius: 4px;
+  transition: all 0.25s ease;
+  margin-bottom: 14px;
+}
+.lock-input::placeholder { color: #555; letter-spacing: 0.1em; }
+.lock-input:focus {
+  outline: none;
+  border-color: var(--red);
+  box-shadow: 0 0 18px rgba(255,43,43,0.6);
+  background: rgba(20,0,0,0.7);
+}
+.lock-btn {
+  width: 100%;
+  padding: 14px;
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 900;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: #fff;
+  background: linear-gradient(135deg, #a30000 0%, #ff2b2b 100%);
+  border: 2px solid #ff5a5a;
+  border-radius: 6px;
+  cursor: pointer;
+  box-shadow: 0 0 20px rgba(255,0,0,0.6);
+  transition: all 0.25s ease;
+}
+.lock-btn:hover {
+  background: linear-gradient(135deg, #cc0000 0%, #ff4444 100%);
+  box-shadow: 0 0 32px rgba(255,0,0,0.95);
+}
+.lock-btn:active { transform: scale(0.98); }
+.lock-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+.lock-error {
+  color: var(--red);
+  font-size: 0.85rem;
+  min-height: 20px;
+  margin-top: 12px;
+  letter-spacing: 0.08em;
+  animation: lockShake 0.4s ease;
+}
+@keyframes lockShake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-6px); }
+  75% { transform: translateX(6px); }
+}
+
+/* =====================================================
+   ОСНОВНОЙ САЙТ
+   ===================================================== */
+.site-wrap {
+  display: none;
+}
+.site-wrap.visible {
+  display: block;
+  animation: pageIn 0.6s ease both;
+}
+@keyframes pageIn {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Верхняя панель (тема + выход) */
+.top-bar {
+  position: fixed;
+  top: 12px; right: 12px;
   z-index: 70;
   display: flex;
-  gap: 6px;
+  gap: 8px;
+  align-items: stretch;
+}
+.theme-toggle {
+  display: flex;
+  gap: 4px;
   background: rgba(0,0,0,0.6);
   border: 1px solid #333;
   border-radius: 6px;
-  padding: 5px;
+  padding: 4px;
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
 }
@@ -184,7 +299,7 @@ html[data-theme="antiraider"] .sweep {
   background: transparent;
   color: #888;
   font-family: inherit;
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   padding: 6px 10px;
@@ -201,19 +316,37 @@ html[data-theme="antiraider"] .sweep {
   background: linear-gradient(135deg, var(--blue-dark), var(--blue));
   box-shadow: 0 0 12px rgba(110,198,245,0.5);
 }
+.logout-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(0,0,0,0.6);
+  border: 1px solid #333;
+  color: #888;
+  font-family: inherit;
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 8px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  transition: all 0.25s ease;
+}
+.logout-btn:hover {
+  color: #fff;
+  border-color: var(--red);
+  box-shadow: 0 0 12px rgba(255,43,43,0.5);
+}
 
-/* ===== СТРАНИЦА ===== */
+/* Основной контейнер */
 .page {
   position: relative;
   z-index: 1;
   max-width: 1000px;
   margin: 0 auto;
   padding: 36px 24px 70px;
-  animation: pageIn 0.6s ease both;
-}
-@keyframes pageIn {
-  from { opacity: 0; transform: translateY(14px); }
-  to   { opacity: 1; transform: translateY(0); }
 }
 
 /* Заголовок */
@@ -221,6 +354,7 @@ html[data-theme="antiraider"] .sweep {
   text-align: center;
   margin-bottom: 36px;
   user-select: none;
+  padding-top: 20px;
 }
 .title-line {
   display: inline-flex;
@@ -236,19 +370,14 @@ html[data-theme="antiraider"] .sweep {
   font-weight: 900;
   letter-spacing: 0.09em;
   text-transform: uppercase;
-  text-shadow:
-    0 0 8px currentColor,
-    0 0 24px currentColor,
-    0 0 48px currentColor;
+  text-shadow: 0 0 8px currentColor, 0 0 24px currentColor, 0 0 48px currentColor;
   animation: flicker 5s infinite;
   line-height: 1.05;
   word-break: break-word;
 }
 .title .accent {
   color: #fff;
-  text-shadow:
-    0 0 8px rgba(255,255,255,0.8),
-    0 0 22px var(--accent);
+  text-shadow: 0 0 8px rgba(255,255,255,0.8), 0 0 22px var(--accent);
 }
 .title.raid-active { animation: flicker 0.4s infinite, raidShake 0.15s infinite; }
 @keyframes raidShake {
@@ -317,7 +446,7 @@ html[data-theme="antiraider"] .sweep {
   animation: blink 1.4s steps(2, start) infinite;
 }
 
-/* ===== ПОИСК ===== */
+/* Поиск */
 .search-wrap {
   position: relative;
   max-width: 520px;
@@ -346,9 +475,7 @@ html[data-theme="antiraider"] .sweep {
   box-shadow: 0 0 0 1px var(--accent), 0 0 18px var(--accent);
   background-color: rgba(20, 0, 0, 0.7);
 }
-html[data-theme="antiraider"] .search-input:focus {
-  background-color: rgba(0, 15, 30, 0.7);
-}
+html[data-theme="antiraider"] .search-input:focus { background-color: rgba(0, 15, 30, 0.7); }
 .search-hint {
   position: absolute;
   right: 14px; top: 50%;
@@ -364,7 +491,6 @@ html[data-theme="antiraider"] .search-input:focus {
   transition: opacity 0.2s ease;
 }
 .search-input:focus + .search-hint { opacity: 0; }
-
 .search-results {
   position: absolute;
   top: calc(100% + 6px);
@@ -378,11 +504,7 @@ html[data-theme="antiraider"] .search-input:focus {
   display: none;
   border-radius: 4px;
 }
-.search-results.open { display: block; animation: dropIn 0.2s ease both; }
-@keyframes dropIn {
-  from { opacity: 0; transform: translateY(-6px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
+.search-results.open { display: block; }
 .search-item {
   display: flex;
   align-items: center;
@@ -402,7 +524,7 @@ html[data-theme="antiraider"] .search-input:focus {
 .search-item:last-child { border-bottom: none; }
 .search-item:hover,
 .search-item.active {
-  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  background: rgba(255, 43, 43, 0.14);
   padding-left: 20px;
   border-left: 3px solid var(--accent);
 }
@@ -426,11 +548,7 @@ html[data-theme="antiraider"] .search-input:focus {
   letter-spacing: 0.15em;
   text-transform: uppercase;
 }
-.search-item mark {
-  background: color-mix(in srgb, var(--accent) 35%, transparent);
-  color: #fff;
-  padding: 0 2px;
-}
+.search-item mark { background: rgba(255,43,43,0.35); color: #fff; padding: 0 2px; }
 .search-empty {
   padding: 14px;
   color: #888;
@@ -439,7 +557,7 @@ html[data-theme="antiraider"] .search-input:focus {
   font-size: 0.9rem;
 }
 
-/* ===== КАТЕГОРИИ ===== */
+/* Категории */
 .categories {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -447,11 +565,7 @@ html[data-theme="antiraider"] .search-input:focus {
   margin-bottom: 30px;
   align-items: start;
 }
-.category {
-  border-radius: 6px;
-  overflow: hidden;
-  transition: box-shadow 0.3s ease, transform 0.25s ease;
-}
+.category { border-radius: 6px; overflow: hidden; }
 .category-header {
   display: flex;
   align-items: center;
@@ -491,18 +605,12 @@ html[data-theme="antiraider"] .search-input:focus {
   background: linear-gradient(135deg, var(--red-dark) 0%, var(--red) 100%);
   box-shadow: 0 0 18px rgba(255,43,43,0.55);
 }
-.category.raiders .category-header:hover {
-  box-shadow: 0 0 30px rgba(255,43,43,0.9);
-  transform: translateY(-1px);
-}
+.category.raiders .category-header:hover { box-shadow: 0 0 30px rgba(255,43,43,0.9); }
 .category.antiraiders .category-header {
   background: linear-gradient(135deg, var(--blue-dark) 0%, var(--blue) 100%);
   box-shadow: 0 0 18px rgba(110,198,245,0.55);
 }
-.category.antiraiders .category-header:hover {
-  box-shadow: 0 0 30px rgba(110,198,245,0.9);
-  transform: translateY(-1px);
-}
+.category.antiraiders .category-header:hover { box-shadow: 0 0 30px rgba(110,198,245,0.9); }
 .category-title { display: flex; align-items: center; gap: 10px; }
 .arrow {
   display: inline-block;
@@ -514,10 +622,7 @@ html[data-theme="antiraider"] .search-input:focus {
   margin-top: -4px;
   flex-shrink: 0;
 }
-.category.open .arrow {
-  transform: rotate(-135deg);
-  margin-top: 4px;
-}
+.category.open .arrow { transform: rotate(-135deg); margin-top: 4px; }
 .category-body {
   max-height: 0;
   overflow: hidden;
@@ -571,16 +676,8 @@ html[data-theme="antiraider"] .search-input:focus {
   justify-content: center;
   font-size: 16px;
   overflow: hidden;
-  transition: box-shadow 0.2s ease, transform 0.2s ease;
 }
 .category.antiraiders .page-avatar-sm { border-color: var(--blue); }
-.page-item:hover .page-avatar-sm {
-  box-shadow: 0 0 12px var(--red);
-  transform: scale(1.08);
-}
-.category.antiraiders .page-item:hover .page-avatar-sm {
-  box-shadow: 0 0 12px var(--blue);
-}
 .page-avatar-sm img { width: 100%; height: 100%; object-fit: cover; }
 .page-item-name { font-weight: 600; letter-spacing: 0.03em; }
 .page-item-cat {
@@ -591,7 +688,7 @@ html[data-theme="antiraider"] .search-input:focus {
   text-transform: uppercase;
 }
 
-/* ===== КОНТЕНТ ===== */
+/* Контент */
 .content { min-height: 400px; }
 .framed {
   position: relative;
@@ -612,22 +709,10 @@ html[data-theme="antiraider"] .search-input:focus {
   width: 18px; height: 18px;
   border: 2px solid var(--accent);
   pointer-events: none;
-  transition: all 0.3s ease;
   filter: drop-shadow(0 0 6px var(--accent));
 }
-.framed::before {
-  top: -2px; left: -2px;
-  border-right: none; border-bottom: none;
-}
-.framed::after {
-  bottom: -2px; right: -2px;
-  border-left: none; border-top: none;
-}
-.framed:hover::before,
-.framed:hover::after {
-  width: 32px; height: 32px;
-  filter: drop-shadow(0 0 12px var(--accent));
-}
+.framed::before { top: -2px; left: -2px; border-right: none; border-bottom: none; }
+.framed::after { bottom: -2px; right: -2px; border-left: none; border-top: none; }
 
 .content-anim { animation: contentIn 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
 @keyframes contentIn {
@@ -661,7 +746,6 @@ html[data-theme="antiraider"] .search-input:focus {
   overflow: hidden;
   box-shadow: 0 0 16px var(--accent), 0 0 32px var(--accent);
   animation: avatarPulse 3s ease-in-out infinite;
-  position: relative;
 }
 @keyframes avatarPulse {
   0%, 100% { box-shadow: 0 0 16px var(--accent), 0 0 32px var(--accent); }
@@ -692,13 +776,10 @@ html[data-theme="antiraider"] .search-input:focus {
   text-transform: uppercase;
   margin-top: 8px;
 }
-
-/* ===== СЕКРЕТНЫЙ КЛИКАБЕЛЬНЫЙ ЗАГОЛОВОК ===== */
 .page-heading h2.secret-title {
   cursor: pointer;
   position: relative;
   display: inline-block;
-  transition: text-shadow 0.3s ease, color 0.3s ease;
 }
 .page-heading h2.secret-title::before {
   content: "";
@@ -710,10 +791,7 @@ html[data-theme="antiraider"] .search-input:focus {
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 .page-heading h2.secret-title:hover {
-  text-shadow:
-    0 0 12px var(--accent),
-    0 0 24px var(--accent),
-    0 0 48px var(--accent);
+  text-shadow: 0 0 12px var(--accent), 0 0 24px var(--accent), 0 0 48px var(--accent);
   animation: secretShake 0.3s infinite;
 }
 .page-heading h2.secret-title:hover::before {
@@ -732,7 +810,6 @@ html[data-theme="antiraider"] .search-input:focus {
   50%      { opacity: 1; }
 }
 
-/* ===== МИНИ-ТАБЛИЧКИ ===== */
 .page-badges { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
 .badge {
   display: inline-flex;
@@ -767,7 +844,6 @@ html[data-theme="antiraider"] .search-input:focus {
   border-radius: 4px;
   box-shadow: 0 0 18px var(--accent);
 }
-
 .site-footer {
   text-align: center;
   color: #444;
@@ -778,79 +854,53 @@ html[data-theme="antiraider"] .search-input:focus {
 }
 .site-footer .dot { color: var(--accent); animation: blink 1.4s steps(2, start) infinite; }
 
-/* =====================================================
-   ПОЗОРНАЯ СТОРОНА — оверлей
-   ===================================================== */
+/* Позорная сторона */
 .shame-overlay {
-  position: fixed;
-  inset: 0;
+  position: fixed; inset: 0;
   z-index: 9000;
   display: none;
   pointer-events: none;
 }
 .shame-overlay.active { display: block; }
-
 .shame-dim {
-  position: absolute;
-  inset: 0;
+  position: absolute; inset: 0;
   background: rgba(0,0,0,0);
   transition: background 1.2s ease;
 }
 .shame-overlay.go .shame-dim { background: rgba(0,0,0,0.85); }
-
 .shame-flash {
-  position: absolute;
-  inset: 0;
+  position: absolute; inset: 0;
   background: radial-gradient(circle at 50% 45%, #fff 0%, #ffb0b0 15%, transparent 55%);
   opacity: 0;
   pointer-events: none;
 }
-.shame-overlay.fire .shame-flash {
-  animation: flash 0.35s ease-out;
-}
-@keyframes flash {
-  0%   { opacity: 1; }
-  100% { opacity: 0; }
-}
-
-.shame-shake {
-  position: absolute;
-  inset: 0;
-  animation: none;
-}
-.shame-overlay.fire .shame-shake {
-  animation: camShake 0.45s cubic-bezier(0.36, 0.07, 0.19, 0.97);
-}
+.shame-overlay.fire .shame-flash { animation: flash 0.35s ease-out; }
+@keyframes flash { 0% { opacity: 1; } 100% { opacity: 0; } }
+.shame-shake { position: absolute; inset: 0; }
+.shame-overlay.fire .shame-shake { animation: camShake 0.45s cubic-bezier(0.36, 0.07, 0.19, 0.97); }
 @keyframes camShake {
   10%, 90% { transform: translate(-2px, 1px) rotate(-0.4deg); }
   20%, 80% { transform: translate(4px, -2px) rotate(0.5deg); }
   30%, 50%, 70% { transform: translate(-6px, 2px) rotate(-0.7deg); }
   40%, 60% { transform: translate(6px, -2px) rotate(0.6deg); }
 }
-
 .shame-bullet {
   position: absolute;
   top: 45%; left: 50%;
   width: 8px; height: 8px;
   border-radius: 50%;
   background: #fff;
-  box-shadow:
-    0 0 20px #fff,
-    0 0 40px #ff2b2b,
-    0 0 80px #ff2b2b;
+  box-shadow: 0 0 20px #fff, 0 0 40px #ff2b2b, 0 0 80px #ff2b2b;
   transform: translate(-50%, -50%) scale(0);
   pointer-events: none;
 }
-.shame-overlay.fire .shame-bullet {
-  animation: bulletIn 0.5s ease-out forwards;
-}
+.shame-overlay.fire .shame-bullet { animation: bulletIn 0.5s ease-out forwards; }
 @keyframes bulletIn {
   0%   { transform: translate(-50%, -50%) scale(0); opacity: 0; }
   30%  { transform: translate(-50%, -50%) scale(1.6); opacity: 1; }
   60%  { transform: translate(-50%, -50%) scale(0.9); opacity: 1; }
   100% { transform: translate(-50%, -50%) scale(40); opacity: 0; }
 }
-
 .shame-card {
   position: absolute;
   left: 50%;
@@ -862,18 +912,12 @@ html[data-theme="antiraider"] .search-input:focus {
   padding: 40px 32px 90px;
   background: linear-gradient(180deg, #120000 0%, #1a0000 40%, #2b0000 100%);
   border: 1px solid #ff2b2b;
-  box-shadow:
-    0 0 40px rgba(255,0,0,0.5),
-    0 0 80px rgba(255,0,0,0.25),
-    inset 0 0 60px rgba(255,0,0,0.08);
+  box-shadow: 0 0 40px rgba(255,0,0,0.5), 0 0 80px rgba(255,0,0,0.25), inset 0 0 60px rgba(255,0,0,0.08);
   border-radius: 8px;
   transition: transform 0.9s cubic-bezier(0.16, 1, 0.3, 1), bottom 0.9s cubic-bezier(0.16, 1, 0.3, 1);
   pointer-events: auto;
 }
-.shame-overlay.go .shame-card {
-  bottom: 6vh;
-  transform: translateX(-50%) translateY(0);
-}
+.shame-overlay.go .shame-card { bottom: 6vh; transform: translateX(-50%) translateY(0); }
 .shame-card h2 {
   color: #ff2b2b;
   font-size: clamp(1.3rem, 4vw, 1.9rem);
@@ -883,12 +927,7 @@ html[data-theme="antiraider"] .search-input:focus {
   text-shadow: 0 0 14px rgba(255,43,43,0.8);
   text-align: center;
 }
-.shame-card p {
-  color: #e7d0d0;
-  font-size: 1rem;
-  line-height: 1.7;
-  margin-bottom: 20px;
-}
+.shame-card p { color: #e7d0d0; font-size: 1rem; line-height: 1.7; margin-bottom: 20px; }
 .shame-card .shame-stamp {
   display: inline-block;
   color: #ff2b2b;
@@ -896,16 +935,10 @@ html[data-theme="antiraider"] .search-input:focus {
   font-size: clamp(1.1rem, 3.5vw, 1.6rem);
   letter-spacing: 0.15em;
   text-transform: uppercase;
-  text-shadow:
-    0 0 12px rgba(255,43,43,1),
-    0 0 28px rgba(255,43,43,0.7);
+  text-shadow: 0 0 12px rgba(255,43,43,1), 0 0 28px rgba(255,43,43,0.7);
   animation: stampPulse 1.4s ease-in-out infinite;
 }
-@keyframes stampPulse {
-  0%, 100% { transform: scale(1); }
-  50%      { transform: scale(1.05); }
-}
-
+@keyframes stampPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
 .shame-flames {
   position: absolute;
   left: 0; right: 0; bottom: 0;
@@ -926,7 +959,6 @@ html[data-theme="antiraider"] .search-input:focus {
   0%, 100% { transform: scaleY(1) translateY(0); }
   50%      { transform: scaleY(1.15) translateY(-6px); }
 }
-
 .shame-enter {
   position: absolute;
   left: 50%;
@@ -944,30 +976,16 @@ html[data-theme="antiraider"] .search-input:focus {
   border: 2px solid #ff5a5a;
   border-radius: 6px;
   cursor: pointer;
-  box-shadow:
-    0 0 24px rgba(255,0,0,0.7),
-    0 0 48px rgba(255,0,0,0.4),
-    inset 0 0 20px rgba(255,255,255,0.1);
+  box-shadow: 0 0 24px rgba(255,0,0,0.7), 0 0 48px rgba(255,0,0,0.4), inset 0 0 20px rgba(255,255,255,0.1);
   transition: all 0.4s ease;
   opacity: 0;
 }
-.shame-overlay.go .shame-enter {
-  bottom: 20px;
-  opacity: 1;
-  transition: all 0.5s ease 1s;
-}
+.shame-overlay.go .shame-enter { bottom: 20px; opacity: 1; transition: all 0.5s ease 1s; }
 .shame-enter:hover {
   background: linear-gradient(135deg, #cc0000 0%, #ff4444 100%);
-  box-shadow:
-    0 0 36px rgba(255,0,0,1),
-    0 0 72px rgba(255,0,0,0.6),
-    inset 0 0 28px rgba(255,255,255,0.2);
+  box-shadow: 0 0 36px rgba(255,0,0,1), 0 0 72px rgba(255,0,0,0.6);
   transform: translateX(-50%) scale(1.05);
 }
-.shame-enter:active {
-  transform: translateX(-50%) scale(0.98);
-}
-
 .shame-details {
   margin-top: 24px;
   padding: 0 20px;
@@ -980,12 +998,7 @@ html[data-theme="antiraider"] .search-input:focus {
   overflow: hidden;
   transition: opacity 0.6s ease, max-height 0.6s ease, padding 0.6s ease;
 }
-.shame-details.open {
-  opacity: 1;
-  max-height: 800px;
-  padding: 24px 20px;
-}
-
+.shame-details.open { opacity: 1; max-height: 800px; padding: 24px 20px; }
 .shame-close {
   position: absolute;
   top: 12px; right: 14px;
@@ -995,7 +1008,6 @@ html[data-theme="antiraider"] .search-input:focus {
   color: #ff2b2b;
   border-radius: 50%;
   font-size: 18px;
-  line-height: 1;
   cursor: pointer;
   transition: all 0.2s ease;
   z-index: 20;
@@ -1006,24 +1018,17 @@ html[data-theme="antiraider"] .search-input:focus {
   box-shadow: 0 0 16px rgba(255,43,43,1);
   transform: rotate(90deg);
 }
-
 body.shame-open #noise-canvas { opacity: 0.06; }
 body.shame-open { overflow: hidden; }
 
-@media (max-width: 560px) {
-  .shame-card { padding: 28px 20px 110px; }
-  .shame-enter { padding: 14px 30px; font-size: 0.95rem; }
-  .shame-flames { height: 100px; }
-}
-
-/* ===== АДАПТИВ ===== */
+/* Адаптив */
 @media (max-width: 820px) {
   .categories { grid-template-columns: 1fr; gap: 14px; }
   .framed { padding: 24px 20px; }
   .page-avatar { width: 66px; height: 66px; font-size: 30px; }
 }
 @media (max-width: 560px) {
-  .page { padding: 26px 12px 44px; }
+  .page { padding: 72px 12px 44px; }
   .title { font-size: clamp(1.5rem, 9vw, 2.4rem); }
   .subtitle { font-size: 0.66rem; letter-spacing: 0.22em; }
   .search-wrap { margin-top: 18px; }
@@ -1032,15 +1037,18 @@ body.shame-open { overflow: hidden; }
   .page-item { padding: 10px 12px; font-size: 0.9rem; }
   .page-avatar-sm { width: 28px; height: 28px; font-size: 14px; }
   .page-item-cat { display: none; }
-  .page-hero { gap: 12px; margin-bottom: 18px; padding-bottom: 16px; }
+  .page-hero { gap: 12px; }
   .page-avatar { width: 54px; height: 54px; font-size: 24px; }
   .page-heading h2 { font-size: 1.2rem; }
   .badge { font-size: 0.68rem; padding: 4px 8px; }
   .framed { padding: 18px 14px; min-height: 250px; }
-  .framed::before, .framed::after { width: 12px; height: 12px; }
   .search-item .cat-tag { display: none; }
-  .theme-toggle { top: 10px; right: 10px; padding: 4px; }
-  .theme-btn { padding: 5px 8px; font-size: 0.65rem; }
+  .top-bar { top: 8px; right: 8px; gap: 6px; }
+  .theme-toggle { padding: 3px; }
+  .theme-btn { padding: 5px 7px; font-size: 0.62rem; }
+  .logout-btn { padding: 6px 10px; font-size: 0.62rem; }
+  .shame-card { padding: 28px 20px 110px; }
+  .shame-enter { padding: 14px 30px; font-size: 0.95rem; }
 }
 @media (max-width: 380px) {
   .title { font-size: 1.4rem; }
@@ -1069,65 +1077,84 @@ body.shame-open { overflow: hidden; }
   <div id="cursor-ring"></div>
   <div id="cursor"></div>
 
-  <div class="theme-toggle">
-    <button class="theme-btn active" data-theme-btn="raider">⚔️ Рейдеры</button>
-    <button class="theme-btn" data-theme-btn="antiraider">🛡️ Антирейдеры</button>
+  <!-- Экран пароля -->
+  <div class="lock-screen" id="lock-screen">
+    <div class="lock-box">
+      <div class="lock-icon">🔒</div>
+      <div class="lock-title">ЗАКРЫТЫЙ ДОСТУП</div>
+      <div class="lock-subtitle">MAX Raid Wiki</div>
+      <input type="password" class="lock-input" id="lock-input"
+             placeholder="Введите пароль..." autocomplete="off" />
+      <button class="lock-btn" id="lock-btn">ВОЙТИ</button>
+      <div class="lock-error" id="lock-error"></div>
+    </div>
   </div>
 
-  <div class="page">
-    <header class="site-header">
-      <div class="title-line">
-        <h1 class="title" id="main-title" data-text="MAX RAID WIKI">
-          <span class="glitch-layers" aria-hidden="true"></span>
-          MAX <span class="accent">RAID</span> WIKI<span class="cursor-blink"></span>
-        </h1>
+  <!-- Основной сайт -->
+  <div class="site-wrap" id="site-wrap">
+    <div class="top-bar">
+      <div class="theme-toggle">
+        <button class="theme-btn active" data-theme-btn="raider">⚔️ Рейдеры</button>
+        <button class="theme-btn" data-theme-btn="antiraider">🛡️ Антирейдеры</button>
       </div>
-      <p class="subtitle">
-        рейдеры<span class="dot">.</span>антирейдеры<span class="dot">.</span>max
-      </p>
-
-      <div class="search-wrap">
-        <input type="text" id="search-input" class="search-input"
-               placeholder="Поиск по базе..." autocomplete="off" />
-        <span class="search-hint">CTRL+K</span>
-        <div class="search-results" id="search-results"></div>
-      </div>
-    </header>
-
-    <div class="categories">
-      <section class="category raiders" id="cat-raiders">
-        <button class="category-header" data-category="raiders">
-          <span class="category-title">⚔️ Рейдеры</span>
-          <span class="arrow"></span>
-        </button>
-        <div class="category-body">
-          <div class="category-inner" id="list-raiders"></div>
-        </div>
-      </section>
-
-      <section class="category antiraiders" id="cat-antiraiders">
-        <button class="category-header" data-category="antiraiders">
-          <span class="category-title">🛡️ Антирейдеры</span>
-          <span class="arrow"></span>
-        </button>
-        <div class="category-body">
-          <div class="category-inner" id="list-antiraiders"></div>
-        </div>
-      </section>
+      <button class="logout-btn" id="logout-btn">↩ Выйти</button>
     </div>
 
-    <main class="content">
-      <div class="framed" id="content-frame">
-        <p style="color:#888">Загрузка данных...</p>
-      </div>
-    </main>
+    <div class="page">
+      <header class="site-header">
+        <div class="title-line">
+          <h1 class="title" id="main-title" data-text="MAX RAID WIKI">
+            <span class="glitch-layers" aria-hidden="true"></span>
+            MAX <span class="accent">RAID</span> WIKI<span class="cursor-blink"></span>
+          </h1>
+        </div>
+        <p class="subtitle">
+          рейдеры<span class="dot">.</span>антирейдеры<span class="dot">.</span>max
+        </p>
 
-    <footer class="site-footer">
-      <span>© MAX Raid Wiki</span><span class="dot">.</span>
-    </footer>
+        <div class="search-wrap">
+          <input type="text" id="search-input" class="search-input"
+                 placeholder="Поиск по базе..." autocomplete="off" />
+          <span class="search-hint">CTRL+K</span>
+          <div class="search-results" id="search-results"></div>
+        </div>
+      </header>
+
+      <div class="categories">
+        <section class="category raiders" id="cat-raiders">
+          <button class="category-header" data-category="raiders">
+            <span class="category-title">⚔️ Рейдеры</span>
+            <span class="arrow"></span>
+          </button>
+          <div class="category-body">
+            <div class="category-inner" id="list-raiders"></div>
+          </div>
+        </section>
+
+        <section class="category antiraiders" id="cat-antiraiders">
+          <button class="category-header" data-category="antiraiders">
+            <span class="category-title">🛡️ Антирейдеры</span>
+            <span class="arrow"></span>
+          </button>
+          <div class="category-body">
+            <div class="category-inner" id="list-antiraiders"></div>
+          </div>
+        </section>
+      </div>
+
+      <main class="content">
+        <div class="framed" id="content-frame">
+          <p style="color:#888">Загрузка данных...</p>
+        </div>
+      </main>
+
+      <footer class="site-footer">
+        <span>© MAX Raid Wiki</span><span class="dot">.</span>
+      </footer>
+    </div>
   </div>
 
-  <!-- Оверлей "Позорная сторона" -->
+  <!-- Позорная сторона -->
   <div class="shame-overlay" id="shame-overlay">
     <div class="shame-shake">
       <div class="shame-dim"></div>
@@ -1135,7 +1162,6 @@ body.shame-open { overflow: hidden; }
       <div class="shame-bullet"></div>
     </div>
     <div class="shame-flames"></div>
-
     <div class="shame-card" id="shame-card">
       <button class="shame-close" id="shame-close" aria-label="Закрыть">✕</button>
       <h2 id="shame-title">—</h2>
@@ -1146,13 +1172,19 @@ body.shame-open { overflow: hidden; }
         <div class="shame-stamp" id="shame-stamp">—</div>
       </div>
     </div>
-
     <button class="shame-enter" id="shame-enter">ЗАЙТИ</button>
   </div>
 
 <script>
 let WIKI = null;
 const CATEGORY_LABEL = { raiders: 'Рейдеры', antiraiders: 'Антирейдеры' };
+
+const lockScreen = document.getElementById('lock-screen');
+const lockInput = document.getElementById('lock-input');
+const lockBtn = document.getElementById('lock-btn');
+const lockError = document.getElementById('lock-error');
+const siteWrap = document.getElementById('site-wrap');
+const logoutBtn = document.getElementById('logout-btn');
 
 const contentFrame = document.getElementById('content-frame');
 const listRaiders = document.getElementById('list-raiders');
@@ -1172,7 +1204,7 @@ const shameDetailsTitle = document.getElementById('shame-details-title');
 const shameDetailsText = document.getElementById('shame-details-text');
 const shameStamp = document.getElementById('shame-stamp');
 
-/* ===== ТЕМА ===== */
+/* ===== Тема ===== */
 const themeBtns = document.querySelectorAll('[data-theme-btn]');
 function setTheme(theme) {
   document.documentElement.setAttribute('data-theme', theme);
@@ -1188,14 +1220,13 @@ themeBtns.forEach(btn => {
   setTheme(saved === 'antiraider' ? 'antiraider' : 'raider');
 })();
 
-/* ===== КУРСОР-ПРИЦЕЛ ===== */
+/* ===== Курсор ===== */
 const cursor = document.getElementById('cursor');
 const cursorRing = document.getElementById('cursor-ring');
 let mx = window.innerWidth / 2, my = window.innerHeight / 2;
 let rx = mx, ry = my;
 let cursorEnabled = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
 if (!cursorEnabled) document.body.classList.add('cursor-off');
-
 document.addEventListener('mousemove', (e) => {
   mx = e.clientX; my = e.clientY;
   cursor.style.left = mx + 'px';
@@ -1208,7 +1239,6 @@ document.addEventListener('mousemove', (e) => {
   cursorRing.style.top  = ry + 'px';
   requestAnimationFrame(ringLoop);
 })();
-
 document.addEventListener('mouseover', (e) => {
   if (e.target.closest('button, a, input, .secret-title')) {
     cursorRing.style.width = '48px';
@@ -1224,16 +1254,14 @@ document.addEventListener('mouseout', (e) => {
   }
 });
 
-/* ===== РЕЙДЕР-ЭФФЕКТ ===== */
+/* ===== Рейдер-эффект ===== */
 const mainTitle = document.getElementById('main-title');
 let titleHoverStart = 0;
 let titleTimer = null;
 mainTitle.addEventListener('mouseenter', () => {
   titleHoverStart = Date.now();
   titleTimer = setInterval(() => {
-    if (Date.now() - titleHoverStart > 1500) {
-      mainTitle.classList.add('raid-active');
-    }
+    if (Date.now() - titleHoverStart > 1500) mainTitle.classList.add('raid-active');
   }, 200);
 });
 mainTitle.addEventListener('mouseleave', () => {
@@ -1242,10 +1270,8 @@ mainTitle.addEventListener('mouseleave', () => {
   mainTitle.classList.remove('raid-active');
 });
 
-/* ===== АВАТАРКИ ===== */
-function isImageUrl(s) {
-  return typeof s === 'string' && /^(https?:)?\/\//i.test(s);
-}
+/* ===== Утилиты ===== */
+function isImageUrl(s) { return typeof s === 'string' && /^(https?:)?\/\//i.test(s); }
 function renderAvatar(value, fallback = '❓') {
   if (!value) return fallback;
   if (isImageUrl(value)) {
@@ -1253,8 +1279,85 @@ function renderAvatar(value, fallback = '❓') {
   }
   return escapeHtml(value);
 }
+function escapeHtml(str) {
+  return String(str)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+}
 
-/* ===== РЕНДЕР ===== */
+/* ===== Логин ===== */
+async function tryLogin() {
+  const password = lockInput.value;
+  if (!password) {
+    lockError.textContent = 'Введите пароль';
+    return;
+  }
+  lockBtn.disabled = true;
+  lockBtn.textContent = 'ПРОВЕРКА...';
+  lockError.textContent = '';
+  try {
+    const res = await fetch('/api/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password })
+    });
+    if (res.ok) {
+      lockScreen.classList.remove('active');
+      siteWrap.classList.add('visible');
+      lockInput.value = '';
+      await loadWiki();
+    } else {
+      const d = await res.json().catch(() => ({}));
+      lockError.textContent = d.error || 'Неверный пароль';
+      lockInput.value = '';
+      lockInput.focus();
+    }
+  } catch {
+    lockError.textContent = 'Ошибка соединения';
+  } finally {
+    lockBtn.disabled = false;
+    lockBtn.textContent = 'ВОЙТИ';
+  }
+}
+lockBtn.addEventListener('click', tryLogin);
+lockInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') tryLogin();
+});
+
+/* Выход */
+logoutBtn.addEventListener('click', async () => {
+  try { await fetch('/api/logout', { method: 'POST' }); } catch {}
+  WIKI = null;
+  contentFrame.innerHTML = `<p style="color:#888">Загрузка данных...</p>`;
+  listRaiders.innerHTML = '';
+  listAntiraiders.innerHTML = '';
+  catRaiders.classList.remove('open');
+  catAntiraiders.classList.remove('open');
+  siteWrap.classList.remove('visible');
+  lockScreen.classList.add('active');
+  lockInput.focus();
+});
+
+/* ===== Автовход при загрузке ===== */
+async function checkSession() {
+  try {
+    const res = await fetch('/api/session');
+    const data = await res.json();
+    if (data.authed) {
+      lockScreen.classList.remove('active');
+      siteWrap.classList.add('visible');
+      await loadWiki();
+    } else {
+      lockScreen.classList.add('active');
+      lockInput.focus();
+    }
+  } catch {
+    lockScreen.classList.add('active');
+    lockInput.focus();
+  }
+}
+
+/* ===== Рендер ===== */
 function setContent(html) {
   if (contentFrame.innerHTML.trim()) {
     contentFrame.classList.remove('content-anim');
@@ -1271,7 +1374,6 @@ function setContent(html) {
     contentFrame.classList.add('content-anim');
   }
 }
-
 function renderHome() {
   setContent(`
     <p>Здравствуйте, вы попали на сайт «MAX Raid Wiki» — здесь собрана информация
@@ -1281,14 +1383,13 @@ function renderHome() {
     </p>
   `);
 }
-
 function renderPage(category, pageId) {
   const page = (WIKI[category] || []).find(p => p.id === pageId);
   if (!page) {
     setContent(`<h2>Не найдено</h2><p>Такой страницы нет.</p>`);
     return;
   }
-  const avatarHtml = renderAvatar(page.avatar || page.icon);
+  const avatarHtml = renderAvatar(page.avatar);
 
   let badgesHtml = '';
   if (page.status || page.owner) {
@@ -1311,7 +1412,6 @@ function renderPage(category, pageId) {
     badgesHtml += `</div>`;
   }
 
-  /* Секретный заголовок — кликабельный */
   const titleHtml = page.secret
     ? `<h2 class="secret-title" title="Не нажимай...">${escapeHtml(page.title)}</h2>`
     : `<h2>${escapeHtml(page.title)}</h2>`;
@@ -1328,29 +1428,25 @@ function renderPage(category, pageId) {
     ${page.content}
   `);
 
-  /* Клик по слову "ЦПР" в заголовке → позорная сторона */
   if (page.secret && page.shame) {
     const t = contentFrame.querySelector('.secret-title');
     if (t) t.addEventListener('click', () => openShame(page.shame));
   }
 }
-
 function fillList(container, category) {
   container.innerHTML = (WIKI[category] || []).map(p => `
     <button class="page-item" data-page="${p.id}" data-category="${category}">
-      <span class="page-avatar-sm">${renderAvatar(p.avatar || p.icon)}</span>
+      <span class="page-avatar-sm">${renderAvatar(p.avatar)}</span>
       <span class="page-item-name">${escapeHtml(p.title)}</span>
       <span class="page-item-cat">${CATEGORY_LABEL[category]}</span>
     </button>
   `).join('');
-
   container.querySelectorAll('.page-item').forEach(btn => {
     btn.addEventListener('click', () => {
       renderPage(btn.dataset.category, btn.dataset.page);
     });
   });
 }
-
 function toggleCategory(cat) {
   const el = cat === 'raiders' ? catRaiders : catAntiraiders;
   const other = cat === 'raiders' ? catAntiraiders : catRaiders;
@@ -1364,13 +1460,18 @@ document.querySelectorAll('.category-header').forEach(btn => {
   });
 });
 
-/* ===== ПОИСК ===== */
+/* ===== Поиск ===== */
 function getAllPages() {
   const all = [];
   for (const cat of Object.keys(WIKI)) {
     for (const page of WIKI[cat]) all.push({ ...page, category: cat });
   }
   return all;
+}
+function stripHtml(html) {
+  const tmp = document.createElement('div');
+  tmp.innerHTML = html;
+  return tmp.textContent || '';
 }
 function searchPages(query) {
   const q = query.trim().toLowerCase();
@@ -1388,11 +1489,6 @@ function searchPages(query) {
     .filter(p => p.score > 0)
     .sort((a, b) => b.score - a.score)
     .slice(0, 8);
-}
-function stripHtml(html) {
-  const tmp = document.createElement('div');
-  tmp.innerHTML = html;
-  return tmp.textContent || '';
 }
 function highlight(text, query) {
   if (!query) return escapeHtml(text);
@@ -1416,7 +1512,7 @@ function renderSearchResults(query) {
   }
   searchResults.innerHTML = results.map(p => `
     <button class="search-item" data-category="${p.category}" data-page="${p.id}">
-      <span class="search-avatar">${renderAvatar(p.avatar || p.icon)}</span>
+      <span class="search-avatar">${renderAvatar(p.avatar)}</span>
       <span class="search-title">${highlight(p.title, query)}</span>
       <span class="cat-tag">${CATEGORY_LABEL[p.category]}</span>
     </button>
@@ -1469,16 +1565,7 @@ document.addEventListener('keydown', e => {
   }
 });
 
-function escapeHtml(str) {
-  return String(str)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
-}
-
-/* ===== ПОЗОРНАЯ СТОРОНА ===== */
+/* ===== Позорная сторона ===== */
 function openShame(shame) {
   shameTitle.textContent = shame.title || 'ПОЗОРНАЯ СТОРОНА';
   shameText.textContent = shame.text || '';
@@ -1486,21 +1573,12 @@ function openShame(shame) {
   shameDetailsText.textContent = '';
   shameStamp.textContent = shame.stamp || 'НЕ СКРЫТЬ!';
   shameDetails.classList.remove('open');
-
   shameOverlay.classList.remove('active', 'fire', 'go');
   void shameOverlay.offsetWidth;
-
   shameOverlay.classList.add('active');
   document.body.classList.add('shame-open');
-
-  requestAnimationFrame(() => {
-    shameOverlay.classList.add('fire');
-  });
-
-  setTimeout(() => {
-    shameOverlay.classList.add('go');
-  }, 450);
-
+  requestAnimationFrame(() => shameOverlay.classList.add('fire'));
+  setTimeout(() => shameOverlay.classList.add('go'), 450);
   shameEnter.onclick = () => {
     shameDetails.classList.add('open');
     shameEnter.style.opacity = '0';
@@ -1519,7 +1597,7 @@ document.addEventListener('keydown', e => {
   if (e.key === 'Escape' && shameOverlay.classList.contains('active')) closeShame();
 });
 
-/* ===== ШУМ ===== */
+/* ===== Шум ===== */
 (function initNoise() {
   const canvas = document.getElementById('noise-canvas');
   const ctx = canvas.getContext('2d');
@@ -1547,7 +1625,7 @@ document.addEventListener('keydown', e => {
   draw();
 })();
 
-/* ===== ЗАГРУЗКА ===== */
+/* ===== Загрузка вики ===== */
 async function loadWiki() {
   try {
     const res = await fetch('/api/wiki', { cache: 'no-store' });
@@ -1560,7 +1638,9 @@ async function loadWiki() {
     contentFrame.innerHTML = `<h2>Ошибка</h2><p>Не удалось загрузить данные вики. Обнови страницу.</p>`;
   }
 }
-loadWiki();
+
+/* ===== Старт ===== */
+checkSession();
 </script>
 </body>
 </html>
