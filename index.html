@@ -11,9 +11,6 @@
   --red-dark: #c41717;
   --blue: #6ec6f5;
   --blue-dark: #3b9bd6;
-  --bg-0: #0d0d0d;
-  --bg-1: #1a1a1a;
-  --bg-2: #202020;
   --text: #e6e6e6;
   --muted: #8a8a8a;
   --green: #22c55e;
@@ -25,13 +22,28 @@ html[data-theme="antiraider"] {
   --accent: var(--blue);
   --accent-dark: var(--blue-dark);
 }
+html[data-theme="spider"] {
+  --accent: #e62429;
+  --accent-dark: #8b0000;
+  --red: #e62429;
+  --red-dark: #8b0000;
+  --blue: #1e90ff;
+  --blue-dark: #0d47a1;
+}
+html[data-theme="spider"] body {
+  background: #0a0a1a;
+  background-image:
+    radial-gradient(circle at 20% 30%, rgba(30,144,255,0.08) 0%, transparent 50%),
+    radial-gradient(circle at 80% 70%, rgba(230,36,41,0.08) 0%, transparent 50%);
+}
+
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 html, body { height: 100%; }
 html { scroll-behavior: smooth; }
 
 body {
   font-family: 'Segoe UI', 'Consolas', monospace, sans-serif;
-  background: var(--bg-1);
+  background: #1a1a1a;
   color: var(--text);
   min-height: 100vh;
   position: relative;
@@ -42,7 +54,7 @@ body {
 body.cursor-off { cursor: default; }
 body.cursor-off a, body.cursor-off button, body.cursor-off input { cursor: pointer; }
 
-/* Курсор-прицел */
+/* Курсор */
 #cursor {
   position: fixed; top: 0; left: 0;
   width: 26px; height: 26px;
@@ -124,14 +136,11 @@ body.cursor-off #cursor, body.cursor-off #cursor-ring { display: none; }
   opacity: 0.5;
 }
 html[data-theme="antiraider"] .sweep {
-  background: linear-gradient(
-    to bottom,
-    transparent 0%,
-    rgba(110,198,245,0.06) 48%,
-    rgba(110,198,245,0.12) 50%,
-    rgba(110,198,245,0.06) 52%,
-    transparent 100%
-  );
+  background: linear-gradient(to bottom, transparent 0%, rgba(110,198,245,0.06) 48%, rgba(110,198,245,0.12) 50%, rgba(110,198,245,0.06) 52%, transparent 100%);
+  background-size: 100% 40vh;
+}
+html[data-theme="spider"] .sweep {
+  background: linear-gradient(to bottom, transparent 0%, rgba(230,36,41,0.06) 48%, rgba(30,144,255,0.12) 50%, rgba(230,36,41,0.06) 52%, transparent 100%);
   background-size: 100% 40vh;
 }
 @keyframes sweepMove {
@@ -295,6 +304,10 @@ html[data-theme="antiraider"] .sweep {
   background: linear-gradient(135deg, var(--blue-dark), var(--blue));
   box-shadow: 0 0 12px rgba(110,198,245,0.5);
 }
+.theme-btn[data-theme-btn="spider"].active {
+  background: linear-gradient(135deg, #e62429, #1e90ff);
+  box-shadow: 0 0 12px rgba(230,36,41,0.6);
+}
 .admin-btn {
   display: flex;
   align-items: center;
@@ -314,11 +327,7 @@ html[data-theme="antiraider"] .sweep {
   transition: all 0.25s ease;
   text-decoration: none;
 }
-.admin-btn:hover {
-  color: #fff;
-  background: var(--red);
-  box-shadow: 0 0 16px rgba(255,43,43,0.9);
-}
+.admin-btn:hover { color: #fff; background: var(--red); box-shadow: 0 0 16px rgba(255,43,43,0.9); }
 .logout-btn {
   display: flex;
   align-items: center;
@@ -337,11 +346,7 @@ html[data-theme="antiraider"] .sweep {
   -webkit-backdrop-filter: blur(6px);
   transition: all 0.25s ease;
 }
-.logout-btn:hover {
-  color: #fff;
-  border-color: var(--red);
-  box-shadow: 0 0 12px rgba(255,43,43,0.5);
-}
+.logout-btn:hover { color: #fff; border-color: var(--red); box-shadow: 0 0 12px rgba(255,43,43,0.5); }
 
 /* Основной контейнер */
 .page {
@@ -377,6 +382,8 @@ html[data-theme="antiraider"] .sweep {
   animation: flicker 5s infinite;
   line-height: 1.05;
   word-break: break-word;
+  cursor: pointer;
+  user-select: none;
 }
 .title .accent {
   color: #fff;
@@ -479,6 +486,7 @@ html[data-theme="antiraider"] .sweep {
   background-color: rgba(20, 0, 0, 0.7);
 }
 html[data-theme="antiraider"] .search-input:focus { background-color: rgba(0, 15, 30, 0.7); }
+html[data-theme="spider"] .search-input:focus { background-color: rgba(30, 0, 0, 0.7); }
 .search-hint {
   position: absolute;
   right: 14px; top: 50%;
@@ -850,11 +858,7 @@ html[data-theme="antiraider"] .search-input:focus { background-color: rgba(0, 15
   text-transform: uppercase;
   margin-bottom: 16px;
 }
-.comment-form {
-  display: grid;
-  gap: 10px;
-  margin-bottom: 22px;
-}
+.comment-form { display: grid; gap: 10px; margin-bottom: 22px; }
 .comment-form input,
 .comment-form textarea {
   width: 100%;
@@ -941,11 +945,7 @@ html[data-theme="antiraider"] .search-input:focus { background-color: rgba(0, 15
   pointer-events: none;
 }
 .shame-overlay.active { display: block; }
-.shame-dim {
-  position: absolute; inset: 0;
-  background: rgba(0,0,0,0);
-  transition: background 1.2s ease;
-}
+.shame-dim { position: absolute; inset: 0; background: rgba(0,0,0,0); transition: background 1.2s ease; }
 .shame-overlay.go .shame-dim { background: rgba(0,0,0,0.85); }
 .shame-flash {
   position: absolute; inset: 0;
@@ -964,8 +964,7 @@ html[data-theme="antiraider"] .search-input:focus { background-color: rgba(0, 15
   40%, 60% { transform: translate(6px, -2px) rotate(0.6deg); }
 }
 .shame-bullet {
-  position: absolute;
-  top: 45%; left: 50%;
+  position: absolute; top: 45%; left: 50%;
   width: 8px; height: 8px;
   border-radius: 50%;
   background: #fff;
@@ -1100,11 +1099,180 @@ html[data-theme="antiraider"] .search-input:focus { background-color: rgba(0, 15
 body.shame-open #noise-canvas { opacity: 0.06; }
 body.shame-open { overflow: hidden; }
 
+/* =====================================================
+   ПАСХАЛКА: ПАУК В УГЛУ
+   ===================================================== */
+#spider-corner {
+  position: fixed;
+  bottom: 16px;
+  right: 16px;
+  z-index: 80;
+  width: 60px;
+  height: 60px;
+  cursor: pointer;
+  user-select: none;
+  transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+  transform-origin: bottom right;
+}
+#spider-corner svg {
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 0 8px rgba(230,36,41,0.6));
+  transition: filter 0.3s ease;
+}
+#spider-corner:hover svg {
+  filter: drop-shadow(0 0 16px rgba(230,36,41,1));
+}
+#spider-corner.escape {
+  transform: translate(-30px, -200px) scale(0.7);
+}
+#spider-corner.returning {
+  transition: transform 1s ease;
+}
+/* Паутина сверху, когда паук убежал */
+#spider-web-line {
+  position: fixed;
+  bottom: 76px;
+  right: 42px;
+  z-index: 79;
+  width: 1px;
+  height: 0;
+  background: linear-gradient(to top, rgba(255,255,255,0.4), rgba(255,255,255,0.05));
+  pointer-events: none;
+  transition: height 0.6s ease;
+}
+#spider-web-line.on { height: 200px; }
+
+@media (max-width: 560px) {
+  #spider-corner { width: 46px; height: 46px; bottom: 12px; right: 12px; }
+  #spider-web-line { bottom: 58px; right: 35px; }
+}
+
+/* =====================================================
+   ПАСХАЛКА: ПАУТИНА ПО УГЛАМ ЭКРАНА
+   ===================================================== */
+#web-corners {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 5000;
+  opacity: 0;
+  transition: opacity 1.2s ease;
+}
+#web-corners.on { opacity: 0.75; }
+#web-corners .web {
+  position: absolute;
+  width: 260px;
+  height: 260px;
+  color: rgba(255,255,255,0.75);
+}
+#web-corners .web svg { width: 100%; height: 100%; }
+#web-corners .web.tl { top: -20px; left: -20px; }
+#web-corners .web.tr { top: -20px; right: -20px; transform: scaleX(-1); }
+#web-corners .web.bl { bottom: -20px; left: -20px; transform: scaleY(-1); }
+#web-corners .web.br { bottom: -20px; right: -20px; transform: scale(-1, -1); }
+
+/* =====================================================
+   ПАСХАЛКА: ПАУК НА ПАУТИНКЕ (за 5 статей)
+   ===================================================== */
+#spider-drop {
+  position: fixed;
+  top: -100px;
+  right: 15%;
+  z-index: 8500;
+  pointer-events: none;
+  transition: top 1s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.5s ease;
+  opacity: 0;
+}
+#spider-drop.show { top: 30vh; opacity: 1; }
+#spider-drop.hide { top: -200px; opacity: 0; }
+#spider-drop svg {
+  width: 60px; height: 60px;
+  filter: drop-shadow(0 0 12px rgba(230,36,41,0.9));
+}
+#spider-drop::before {
+  content: "";
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  width: 1px;
+  height: 30vh;
+  background: linear-gradient(to bottom, rgba(255,255,255,0.05), rgba(255,255,255,0.5));
+  transform: translateX(-50%);
+}
+
+/* =====================================================
+   ПАСХАЛКА: ПАУТИНА ПРИ БЕЗДЕЙСТВИИ
+   ===================================================== */
+.idle-hint {
+  position: fixed;
+  bottom: 100px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 8500;
+  padding: 10px 20px;
+  background: rgba(0,0,0,0.85);
+  border: 1px solid #e62429;
+  border-radius: 6px;
+  color: #e62429;
+  font-family: inherit;
+  font-size: 0.85rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-shadow: 0 0 8px rgba(230,36,41,0.8);
+  box-shadow: 0 0 24px rgba(230,36,41,0.5);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.6s ease;
+}
+.idle-hint.show { opacity: 1; }
+
+/* =====================================================
+   ПАСХАЛКА: СЕКРЕТНОЕ СЛОВО
+   ===================================================== */
+.spider-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 8800;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  background: radial-gradient(circle at center, transparent 30%, rgba(0,0,0,0.5) 100%);
+}
+.spider-overlay.on { opacity: 1; }
+.spider-overlay .crawl {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  color: #e62429;
+  font-size: clamp(1.2rem, 4vw, 2rem);
+  font-weight: 900;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  text-shadow: 0 0 16px rgba(230,36,41,0.9), 0 0 32px rgba(230,36,41,0.5);
+  white-space: nowrap;
+  animation: crawlPulse 2s ease-in-out infinite;
+}
+@keyframes crawlPulse {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); }
+  50%      { transform: translate(-50%, -50%) scale(1.05); }
+}
+
+/* Фейковая статья в поиске */
+.search-item.spider-fake {
+  background: linear-gradient(90deg, rgba(230,36,41,0.1), rgba(30,144,255,0.1));
+  border-left: 3px solid #e62429;
+}
+.search-item.spider-fake:hover {
+  background: linear-gradient(90deg, rgba(230,36,41,0.25), rgba(30,144,255,0.25));
+}
+
 /* Адаптив */
 @media (max-width: 820px) {
   .categories { grid-template-columns: 1fr; gap: 14px; }
   .framed { padding: 24px 20px; }
   .page-avatar { width: 66px; height: 66px; font-size: 30px; }
+  #web-corners .web { width: 180px; height: 180px; }
 }
 @media (max-width: 560px) {
   .page { padding: 72px 12px 44px; }
@@ -1156,6 +1324,55 @@ body.shame-open { overflow: hidden; }
   <div id="cursor-ring"></div>
   <div id="cursor"></div>
 
+  <!-- Пасхалка: паутина по углам -->
+  <div id="web-corners">
+    <div class="web tl"><svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><g stroke="currentColor" stroke-width="0.4" fill="none"><path d="M0,0 L100,100 M0,0 L100,50 M0,0 L50,100 M0,0 L100,0 M0,0 L0,100 M0,0 L100,25 M0,0 L25,100 M0,0 L100,75 M0,0 L75,100"/><path d="M20,20 Q30,15 40,25 T60,25 M40,40 Q50,35 60,45 T80,45 M60,60 Q70,55 80,65 T100,65" stroke-dasharray="2 2"/><circle cx="30" cy="30" r="1.5" fill="currentColor"/><circle cx="50" cy="50" r="1.5" fill="currentColor"/></g></svg></div>
+    <div class="web tr"><svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><g stroke="currentColor" stroke-width="0.4" fill="none"><path d="M0,0 L100,100 M0,0 L100,50 M0,0 L50,100 M0,0 L100,0 M0,0 L0,100 M0,0 L100,25 M0,0 L25,100 M0,0 L100,75 M0,0 L75,100"/><path d="M20,20 Q30,15 40,25 T60,25 M40,40 Q50,35 60,45 T80,45 M60,60 Q70,55 80,65 T100,65" stroke-dasharray="2 2"/></g></svg></div>
+    <div class="web bl"><svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><g stroke="currentColor" stroke-width="0.4" fill="none"><path d="M0,0 L100,100 M0,0 L100,50 M0,0 L50,100 M0,0 L100,0 M0,0 L0,100 M0,0 L100,25 M0,0 L25,100 M0,0 L100,75 M0,0 L75,100"/><path d="M20,20 Q30,15 40,25 T60,25 M40,40 Q50,35 60,45 T80,45" stroke-dasharray="2 2"/></g></svg></div>
+    <div class="web br"><svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><g stroke="currentColor" stroke-width="0.4" fill="none"><path d="M0,0 L100,100 M0,0 L100,50 M0,0 L50,100 M0,0 L100,0 M0,0 L0,100 M0,0 L100,25 M0,0 L25,100" stroke-dasharray="2 2"/></g></svg></div>
+  </div>
+
+  <!-- Пасхалка: паук в углу -->
+  <div id="spider-web-line"></div>
+  <div id="spider-corner" title="...">
+    <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="32" cy="38" rx="9" ry="11" fill="#e62429" stroke="#000" stroke-width="1"/>
+      <ellipse cx="32" cy="26" rx="6" ry="6" fill="#e62429" stroke="#000" stroke-width="1"/>
+      <circle cx="29" cy="25" r="1.4" fill="#fff"/>
+      <circle cx="35" cy="25" r="1.4" fill="#fff"/>
+      <circle cx="29" cy="25" r="0.6" fill="#000"/>
+      <circle cx="35" cy="25" r="0.6" fill="#000"/>
+      <path d="M26 30 L12 24 M26 32 L10 32 M26 34 L12 40" stroke="#000" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+      <path d="M38 30 L52 24 M38 32 L54 32 M38 34 L52 40" stroke="#000" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+      <path d="M27 40 L16 48 M27 42 L14 52 M27 44 L18 54" stroke="#000" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+      <path d="M37 40 L48 48 M37 42 L50 52 M37 44 L46 54" stroke="#000" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+    </svg>
+  </div>
+
+  <!-- Пасхалка: паук на паутинке (за 5 статей) -->
+  <div id="spider-drop">
+    <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="32" cy="38" rx="9" ry="11" fill="#e62429" stroke="#000" stroke-width="1"/>
+      <ellipse cx="32" cy="26" rx="6" ry="6" fill="#e62429" stroke="#000" stroke-width="1"/>
+      <circle cx="29" cy="25" r="1.4" fill="#fff"/>
+      <circle cx="35" cy="25" r="1.4" fill="#fff"/>
+      <circle cx="29" cy="25" r="0.6" fill="#000"/>
+      <circle cx="35" cy="25" r="0.6" fill="#000"/>
+      <path d="M26 30 L12 24 M26 32 L10 32 M26 34 L12 40" stroke="#000" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+      <path d="M38 30 L52 24 M38 32 L54 32 M38 34 L52 40" stroke="#000" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+      <path d="M27 40 L16 48 M27 42 L14 52 M27 44 L18 54" stroke="#000" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+      <path d="M37 40 L48 48 M37 42 L50 52 M37 44 L46 54" stroke="#000" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+    </svg>
+  </div>
+
+  <!-- Пасхалка: секретное слово -->
+  <div class="spider-overlay" id="spider-overlay">
+    <div class="crawl">🕷️ WITH GREAT POWER COMES GREAT RESPONSIBILITY 🕷️</div>
+  </div>
+
+  <!-- Пасхалка: подсказка при бездействии -->
+  <div class="idle-hint" id="idle-hint">🕸️ сайт ждёт тебя, дружелюбный сосед 🕸️</div>
+
   <!-- Экран пароля -->
   <div class="lock-screen" id="lock-screen">
     <div class="lock-box">
@@ -1175,6 +1392,7 @@ body.shame-open { overflow: hidden; }
       <div class="theme-toggle">
         <button class="theme-btn active" data-theme-btn="raider">⚔️ Рейдеры</button>
         <button class="theme-btn" data-theme-btn="antiraider">🛡️ Антирейдеры</button>
+        <button class="theme-btn" data-theme-btn="spider">🕷️ Паук</button>
       </div>
       <a href="/admin" target="_blank" class="admin-btn">⚙️ Админка</a>
       <button class="logout-btn" id="logout-btn">↩ Выйти</button>
@@ -1297,7 +1515,7 @@ themeBtns.forEach(btn => {
 (function initTheme() {
   let saved = null;
   try { saved = localStorage.getItem('raidwiki-theme'); } catch {}
-  setTheme(saved === 'antiraider' ? 'antiraider' : 'raider');
+  setTheme(saved || 'raider');
 })();
 
 /* ===== Курсор ===== */
@@ -1320,14 +1538,14 @@ document.addEventListener('mousemove', (e) => {
   requestAnimationFrame(ringLoop);
 })();
 document.addEventListener('mouseover', (e) => {
-  if (e.target.closest('button, a, input, .secret-title')) {
+  if (e.target.closest('button, a, input, .secret-title, #spider-corner')) {
     cursorRing.style.width = '48px';
     cursorRing.style.height = '48px';
     cursorRing.style.opacity = '0.9';
   }
 });
 document.addEventListener('mouseout', (e) => {
-  if (e.target.closest('button, a, input, .secret-title')) {
+  if (e.target.closest('button, a, input, .secret-title, #spider-corner')) {
     cursorRing.style.width = '34px';
     cursorRing.style.height = '34px';
     cursorRing.style.opacity = '0.6';
@@ -1529,6 +1747,9 @@ function renderPage(category, pageId) {
     if (t) t.addEventListener('click', () => openShame(page.shame));
   }
 
+  /* Отмечаем посещение статьи для пасхалки */
+  markPageVisit(category, pageId);
+
   /* Комментарии */
   const form = document.getElementById('comment-form');
   const authorInput = document.getElementById('comment-author');
@@ -1663,28 +1884,58 @@ function highlight(text, query) {
 }
 let activeSearchIndex = -1;
 function renderSearchResults(query) {
+  const q = query.trim().toLowerCase();
   const results = searchPages(query);
   activeSearchIndex = -1;
-  if (!query.trim()) {
+
+  /* ===== Пасхалка: секретное слово ===== */
+  const spiderWords = ['паук', 'spider', 'spidey', 'человек-паук', 'человек паук', 'питер паркер', 'peter parker'];
+  const isSpiderQuery = spiderWords.some(w => q === w || q.includes(w));
+
+  if (!q) {
     searchResults.classList.remove('open');
     searchResults.innerHTML = '';
     return;
   }
-  if (!results.length) {
+
+  let html = '';
+
+  /* Фейковый Спайдермен всегда сверху если совпало */
+  if (isSpiderQuery) {
+    html += `
+      <button class="search-item spider-fake" data-spider="1">
+        <span class="search-avatar" style="border-color:#e62429;background:#1a0000;">🕷️</span>
+        <span class="search-title">Спайдермен <mark>${escapeHtml(q)}</mark> — дружелюбный сосед</span>
+        <span class="cat-tag" style="color:#e62429;">пасхалка</span>
+      </button>
+    `;
+  }
+
+  if (!results.length && !isSpiderQuery) {
     searchResults.innerHTML = `<div class="search-empty">Ничего не найдено</div>`;
     searchResults.classList.add('open');
     return;
   }
-  searchResults.innerHTML = results.map(p => `
+
+  html += results.map(p => `
     <button class="search-item" data-category="${p.category}" data-page="${p.id}">
       <span class="search-avatar">${renderAvatar(p.avatar)}</span>
       <span class="search-title">${highlight(p.title, query)}</span>
       <span class="cat-tag">${CATEGORY_LABEL[p.category]}</span>
     </button>
   `).join('');
+
+  searchResults.innerHTML = html;
   searchResults.classList.add('open');
+
   searchResults.querySelectorAll('.search-item').forEach(btn => {
     btn.addEventListener('click', () => {
+      if (btn.dataset.spider) {
+        triggerSpiderOverlay();
+        searchResults.classList.remove('open');
+        searchInput.value = '';
+        return;
+      }
       renderPage(btn.dataset.category, btn.dataset.page);
       searchResults.classList.remove('open');
       searchInput.value = '';
@@ -1762,6 +2013,110 @@ document.addEventListener('keydown', e => {
   if (e.key === 'Escape' && shameOverlay.classList.contains('active')) closeShame();
 });
 
+/* =====================================================
+   ПАСХАЛКИ ПРО ПАУКА
+   ===================================================== */
+
+/* 1. ПАУК В УГЛУ — убегает и возвращается */
+const spiderCorner = document.getElementById('spider-corner');
+const spiderWebLine = document.getElementById('spider-web-line');
+let spiderEscaped = false;
+spiderCorner.addEventListener('click', () => {
+  if (!spiderEscaped) {
+    spiderCorner.classList.add('escape');
+    spiderWebLine.classList.add('on');
+    spiderEscaped = true;
+    setTimeout(() => {
+      spiderCorner.classList.add('returning');
+      spiderCorner.classList.remove('escape');
+      spiderWebLine.classList.remove('on');
+      spiderEscaped = false;
+      setTimeout(() => spiderCorner.classList.remove('returning'), 1000);
+    }, 1500);
+  }
+});
+
+/* 2. ТРОЙНОЙ КЛИК ПО ЗАГОЛОВКУ — паутина */
+let titleClickCount = 0;
+let titleClickTimer = null;
+mainTitle.addEventListener('click', () => {
+  titleClickCount++;
+  clearTimeout(titleClickTimer);
+  titleClickTimer = setTimeout(() => { titleClickCount = 0; }, 800);
+  if (titleClickCount >= 3) {
+    titleClickCount = 0;
+    toggleWebCorners(true);
+    setTimeout(() => toggleWebCorners(false), 2500);
+  }
+});
+
+/* 3. ПАУТИНА ПО УГЛАМ */
+const webCorners = document.getElementById('web-corners');
+function toggleWebCorners(on) {
+  if (on) webCorners.classList.add('on');
+  else webCorners.classList.remove('on');
+}
+
+/* 4. ПАУК НА ПАУТИНКЕ — за 5 статей подряд */
+const visitedPages = new Set();
+const spiderDrop = document.getElementById('spider-drop');
+let spiderDropped = false;
+function markPageVisit(category, pageId) {
+  const key = category + ':' + pageId;
+  visitedPages.add(key);
+  if (visitedPages.size >= 5 && !spiderDropped) {
+    spiderDropped = true;
+    showSpiderDrop();
+    setTimeout(() => { spiderDropped = false; }, 30000);
+  }
+}
+function showSpiderDrop() {
+  spiderDrop.classList.remove('hide');
+  spiderDrop.classList.add('show');
+  setTimeout(() => {
+    spiderDrop.classList.remove('show');
+    spiderDrop.classList.add('hide');
+  }, 4000);
+}
+
+/* 5. СЕКРЕТНОЕ СЛОВО — оверлей с пауком */
+const spiderOverlay = document.getElementById('spider-overlay');
+function triggerSpiderOverlay() {
+  spiderOverlay.classList.add('on');
+  setTimeout(() => spiderOverlay.classList.remove('on'), 3000);
+  console.log('%c🕷️ With great power comes great responsibility.', 'color:#e62429;font-size:16px;font-weight:bold;');
+}
+
+/* 6. ПАУТИНА ПРИ БЕЗДЕЙСТВИИ */
+const idleHint = document.getElementById('idle-hint');
+let idleTimer = null;
+function resetIdle() {
+  clearTimeout(idleTimer);
+  idleHint.classList.remove('show');
+  toggleWebCorners(false);
+  idleTimer = setTimeout(() => {
+    idleHint.classList.add('show');
+    toggleWebCorners(true);
+    setTimeout(() => {
+      idleHint.classList.remove('show');
+      toggleWebCorners(false);
+    }, 5000);
+  }, 60000);
+}
+['mousemove','keydown','click','scroll','touchstart'].forEach(ev => {
+  document.addEventListener(ev, resetIdle, { passive: true });
+});
+resetIdle();
+
+/* 7. СКРЫТАЯ СТРАНИЦА /spider */
+if (window.location.pathname === '/spider' || window.location.hash === '#spider') {
+  document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(() => {
+      alert('🕷️ С пауком-пасхалкой! Ты нашёл скрытую страницу.\n\nWith great power comes great responsibility.');
+    }, 500);
+  });
+}
+
 /* ===== Шум ===== */
 (function initNoise() {
   const canvas = document.getElementById('noise-canvas');
@@ -1807,4 +2162,4 @@ async function loadWiki() {
 checkSession();
 </script>
 </body>
-              </html> 
+</html>
