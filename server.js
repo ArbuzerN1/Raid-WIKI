@@ -17,7 +17,7 @@ const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'neaboba228';
 const SESSION_SECRET = process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex');
 const SITE_COOKIE = 'raidwiki_session';
 const ADMIN_COOKIE = 'raidwiki_admin';
-const COOKIE_MAX_AGE = 1000 * 60 * 60 * 24 * 7;
+const COOKIE_MAX_AGE = 1000 * 60 * 60 * 24 * 7; // 7 дней
 
 if (!SUPABASE_URL || !SUPABASE_ANON_KEY || !SUPABASE_SERVICE_KEY) {
   console.error('Не заданы SUPABASE_URL / SUPABASE_ANON_KEY / SUPABASE_SERVICE_KEY');
@@ -48,6 +48,7 @@ app.use((req, res, next) => {
     [
       "default-src 'self'",
       "img-src 'self' data: https:",
+      "media-src 'self' data: https:",
       "style-src 'self' 'unsafe-inline'",
       "script-src 'self' 'unsafe-inline'",
       "font-src 'self' data:",
@@ -158,97 +159,76 @@ function safeCompare(a, b) {
 }
 
 /* =====================================================
-   СТАРТОВЫЕ ДАННЫЕ
+   ОДНОРАЗОВЫЕ ПАРОЛИ
+   -----------------------------------------------------
+   Возвращает true, если пароль подошёл и был успешно
+   помечен как использованный. false — если пароль не
+   найден или уже использован.
    ===================================================== */
-const SEED = [
-  {
-    category: 'raiders', page_id: 'uotb', title: 'UOTB', sort_order: 1,
-    avatar: 'https://cdn.phototourl.com/free/2026-09-20-f3938c33-1e29-4753-a965-f26629537a3b.jpg',
-    status: 'жив', owner: 'Пабло', secret: false, shame: null,
-    content: `<p>UOTB, или же «Union Of The Brash» — первые рейдеры в максе. Данной
-      группировке более 4-ех лет и находились они до MAX'а в Viber и Telegram.
-      Именно с них началось рейдерство в MAX'е.</p>`
-  },
-  {
-    category: 'raiders', page_id: 'mars', title: 'MARS', sort_order: 2,
-    avatar: 'https://cdn.phototourl.com/free/2026-09-20-f93f9e0d-7fc5-4d78-8a91-881dd0d61730.jpg',
-    status: 'жив', owner: 'SPAWN', secret: false, shame: null,
-    content: `<p>MARS — крупнейший подклан UOTB, занимается он в основном шпионством,
-      но они также и рейдеры. На данный момент в чате адаптации MARS'а
-      650+ участников.</p>`
-  },
-  {
-    category: 'raiders', page_id: 'fiery-empire', title: 'Fiery Empire', sort_order: 3,
-    avatar: '🔥', status: 'жив', owner: 'FE ASAHI SE', secret: false, shame: null,
-    content: `<p>Fiery Empire — это рейдеры, которые раньше были просто чатом. Раньше
-      они назывались «Британской Империи» и зависли от НИЕ, но потом пришёл Cold,
-      и сделал их свободными, после чего они стали рейдерами. Самый крутой именно
-      в личных достижениях владелец. На данный момент в их чате примерно
-      400+ участников.</p>`
-  },
-  {
-    category: 'antiraiders', page_id: 'ftaj', title: 'FTAJ', sort_order: 1,
-    avatar: '🛡️', status: 'жив', owner: 'даник', secret: false, shame: null,
-    content: `<p>FTAJ — вторые рейдеры (на данный момент антирейдеры) в MAX'е.
-      Сейчас занимаются антирейдерством, уничтожают неизвестные и мелкие
-      рейдерские группировки, а также конфликтуют с существуещими крупными.</p>`
-  },
-  {
-    category: 'antiraiders', page_id: 'tspr', title: 'ЦПР', sort_order: 2,
-    avatar: 'https://cdn.phototourl.com/free/2026-09-20-490ac874-41a7-4be0-8ea7-ce6cb4c60c77.jpg',
-    status: 'жив', owner: 'shalow dern (шейд)', secret: true,
-    shame: {
-      title: 'ПОЗОРНЫЕ СТОРОНЫ ЦПР',
-      text: `Были зарейжено однажды по ошибке в коде MAX'а, что резко пошатнуло
-             их репутацию, быстро восстановились и даже стали лучше, но позор`,
-      stamp: 'НЕ СКРЫТЬ!'
-    },
-    content: `<p>ЦПР, или же Центр Противодействия Рейдерам — первая антирейдерская
-      группировка. ЦПР создавался просто канал против обмана со стороны UOTB,
-      но потом перерос в более крупный проект по сливам рейдеров, и их уничтожению.
-      Были созданы в один день с KR.</p>`
-  },
-  {
-    category: 'antiraiders', page_id: 'kr', title: 'KR', sort_order: 3,
-    avatar: '✨', status: 'жив', owner: 'user (Крутой Челик)', secret: false, shame: null,
-    content: `<p>KR — бывшие рейдеры, на данный момент антирейдеры. Самые известные
-      свежаки среди всех. Были созданы в один день с ЦПР.</p>`
-  }
-];
-
-async function seedIfEmpty() {
+async function consumeOneTimePassword(password, ip) {
   try {
-    const { count, error } = await supabaseAdmin
-      .from('wiki')
-      .select('id', { count: 'exact', head: true });
-    if (error) throw error;
-    if ((count || 0) > 0) {
-      console.log(`База уже содержит ${count} статей`);
-      return;
+    /* Ищем пароль, который ещё не использован */
+    const { data, error } = await supabaseAdmin
+      .from('one_time_passwords')
+      .select('id, used')
+      .eq('password', password)
+      .maybeSingle();
+
+    if (error) {
+      console.error('Ошибка чтения OTP:', error.message);
+      return false;
     }
-    console.log('База пуста, заливаю стартовые данные...');
-    const { error: insErr } = await supabaseAdmin.from('wiki').insert(SEED);
-    if (insErr) throw insErr;
-    console.log('Стартовые данные залиты');
+    if (!data) return false;      // нет такого пароля
+    if (data.used) return false;  // уже использован
+
+    /* Помечаем как использованный (только если ещё не использован) */
+    const { error: updErr, count } = await supabaseAdmin
+      .from('one_time_passwords')
+      .update(
+        { used: true, used_at: new Date().toISOString(), used_ip: ip || null },
+        { count: 'exact' }
+      )
+      .eq('id', data.id)
+      .eq('used', false);
+
+    if (updErr) {
+      console.error('Ошибка обновления OTP:', updErr.message);
+      return false;
+    }
+    /* Если count = 0, значит кто-то успел использовать параллельно */
+    return (count || 0) > 0;
   } catch (e) {
-    console.error('Ошибка сидинга:', e.message || e);
+    console.error('Ошибка OTP:', e.message || e);
+    return false;
   }
 }
 
 /* =====================================================
    ПУБЛИЧНОЕ API
    ===================================================== */
-app.post('/api/login', rateLimit(30), (req, res) => {
+app.post('/api/login', rateLimit(30), async (req, res) => {
   const { password } = req.body || {};
   if (typeof password !== 'string' || !password) {
     return res.status(400).json({ error: 'Пароль не указан' });
   }
-  if (!safeCompare(password, SITE_PASSWORD)) {
-    return res.status(401).json({ error: 'Неверный пароль' });
+
+  /* 1. Проверяем основной пароль */
+  if (safeCompare(password, SITE_PASSWORD)) {
+    const token = signSession({ role: 'site', exp: Date.now() + COOKIE_MAX_AGE });
+    setCookie(res, SITE_COOKIE, token);
+    return res.json({ ok: true, type: 'main' });
   }
-  const token = signSession({ role: 'site', exp: Date.now() + COOKIE_MAX_AGE });
-  setCookie(res, SITE_COOKIE, token);
-  res.json({ ok: true });
+
+  /* 2. Проверяем одноразовый пароль */
+  const ip = req.ip || req.headers['x-forwarded-for'] || null;
+  const otpOk = await consumeOneTimePassword(password, ip);
+  if (otpOk) {
+    const token = signSession({ role: 'site', exp: Date.now() + COOKIE_MAX_AGE });
+    setCookie(res, SITE_COOKIE, token);
+    return res.json({ ok: true, type: 'onetime' });
+  }
+
+  return res.status(401).json({ error: 'Неверный пароль' });
 });
 
 app.post('/api/logout', (req, res) => {
@@ -291,9 +271,7 @@ app.get('/api/wiki', rateLimit(120), async (req, res) => {
   }
 });
 
-/* =====================================================
-   КОММЕНТАРИИ
-   ===================================================== */
+/* Комментарии */
 app.get('/api/comments/:category/:pageId', rateLimit(120), async (req, res) => {
   if (!isSiteAuthed(req)) return res.status(401).json({ error: 'Не авторизован' });
   const { category, pageId } = req.params;
@@ -463,6 +441,21 @@ app.delete('/api/admin/wiki/:category/:pageId', rateLimit(60), async (req, res) 
   }
 });
 
+/* Список оставшихся одноразовых паролей (для админа) */
+app.get('/api/admin/otp', rateLimit(60), async (req, res) => {
+  if (!isAdminAuthed(req)) return res.status(401).json({ error: 'Не авторизован' });
+  try {
+    const { data, error } = await supabaseAdmin
+      .from('one_time_passwords')
+      .select('id, password, used, used_at, used_ip')
+      .order('id', { ascending: true });
+    if (error) throw error;
+    res.json(data || []);
+  } catch (e) {
+    res.status(500).json({ error: 'Ошибка базы: ' + (e.message || 'unknown') });
+  }
+});
+
 /* =====================================================
    ОТДАЧА СТРАНИЦ
    ===================================================== */
@@ -491,7 +484,6 @@ app.get('*', (req, res) => {
 /* =====================================================
    СТАРТ
    ===================================================== */
-app.listen(PORT, async () => {
+app.listen(PORT, () => {
   console.log(`MAX Raid Wiki запущен на порту ${PORT}`);
-  await seedIfEmpty();
 });
