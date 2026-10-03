@@ -148,6 +148,49 @@ html[data-theme="spider"] .sweep {
   100% { background-position: 0 140vh; }
 }
 
+/* ===== ПАСХАЛКА: ПЕРЕЛИВАЮЩИЙСЯ ТЕКСТ В ТЕМЕ ПАУКА ===== */
+html[data-theme="spider"] .category-header {
+  background: linear-gradient(90deg, #e62429 0%, #1e90ff 50%, #e62429 100%);
+  background-size: 200% 100%;
+  animation: spiderShift 4s linear infinite;
+  box-shadow: 0 0 24px rgba(230,36,41,0.6), 0 0 48px rgba(30,144,255,0.3);
+}
+html[data-theme="spider"] .category.antiraiders .category-header {
+  background: linear-gradient(90deg, #1e90ff 0%, #e62429 50%, #1e90ff 100%);
+  background-size: 200% 100%;
+  animation: spiderShift 4s linear infinite;
+  box-shadow: 0 0 24px rgba(30,144,255,0.6), 0 0 48px rgba(230,36,41,0.3);
+}
+html[data-theme="spider"] .category-header .category-title,
+html[data-theme="spider"] .category-header .arrow {
+  filter: drop-shadow(0 0 8px rgba(255,255,255,0.6));
+}
+@keyframes spiderShift {
+  0%   { background-position: 0% 50%; }
+  100% { background-position: 200% 50%; }
+}
+/* Заголовок сайта в теме паука — тоже переливается */
+html[data-theme="spider"] .title {
+  background: linear-gradient(90deg, #e62429 0%, #1e90ff 50%, #e62429 100%);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  text-shadow: none;
+  filter: drop-shadow(0 0 12px rgba(230,36,41,0.7)) drop-shadow(0 0 24px rgba(30,144,255,0.5));
+  animation: flicker 5s infinite, spiderShift 5s linear infinite;
+}
+html[data-theme="spider"] .title .accent {
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  background: linear-gradient(90deg, #1e90ff 0%, #e62429 50%, #1e90ff 100%);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  animation: spiderShift 5s linear infinite;
+}
+
 /* Экран пароля */
 .lock-screen {
   position: fixed; inset: 0;
@@ -306,8 +349,13 @@ html[data-theme="spider"] .sweep {
 }
 .theme-btn[data-theme-btn="spider"].active {
   background: linear-gradient(135deg, #e62429, #1e90ff);
+  background-size: 200% 100%;
+  animation: spiderShift 3s linear infinite;
   box-shadow: 0 0 12px rgba(230,36,41,0.6);
 }
+/* Тема паука скрыта, пока пасхалка не активирована */
+.theme-btn.spider-hidden { display: none; }
+
 .admin-btn {
   display: flex;
   align-items: center;
@@ -1100,171 +1148,98 @@ body.shame-open #noise-canvas { opacity: 0.06; }
 body.shame-open { overflow: hidden; }
 
 /* =====================================================
-   ПАСХАЛКА: ПАУК В УГЛУ
+   ПАСХАЛКА: ВСЁ СКРЫТО, ПОКА НЕ АКТИВИРОВАНА
    ===================================================== */
-#spider-corner {
-  position: fixed;
-  bottom: 16px;
-  right: 16px;
-  z-index: 80;
-  width: 60px;
-  height: 60px;
-  cursor: pointer;
-  user-select: none;
-  transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
-  transform-origin: bottom right;
-}
-#spider-corner svg {
-  width: 100%;
-  height: 100%;
-  filter: drop-shadow(0 0 8px rgba(230,36,41,0.6));
-  transition: filter 0.3s ease;
-}
-#spider-corner:hover svg {
-  filter: drop-shadow(0 0 16px rgba(230,36,41,1));
-}
-#spider-corner.escape {
-  transform: translate(-30px, -200px) scale(0.7);
-}
-#spider-corner.returning {
-  transition: transform 1s ease;
-}
-/* Паутина сверху, когда паук убежал */
-#spider-web-line {
-  position: fixed;
-  bottom: 76px;
-  right: 42px;
-  z-index: 79;
-  width: 1px;
-  height: 0;
-  background: linear-gradient(to top, rgba(255,255,255,0.4), rgba(255,255,255,0.05));
-  pointer-events: none;
-  transition: height 0.6s ease;
-}
-#spider-web-line.on { height: 200px; }
+body:not(.spider-unlocked) #spider-corner,
+body:not(.spider-unlocked) #spider-web-line,
+body:not(.spider-unlocked) #spider-drop,
+body:not(.spider-unlocked) #web-corners,
+body:not(.spider-unlocked) #idle-hint { display: none !important; }
 
-@media (max-width: 560px) {
-  #spider-corner { width: 46px; height: 46px; bottom: 12px; right: 12px; }
-  #spider-web-line { bottom: 58px; right: 35px; }
+/* Скрытая страница активации */
+#spider-activation {
+  position: fixed; inset: 0;
+  z-index: 99999;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: radial-gradient(ellipse at center, #1a0000 0%, #0a0a1a 70%);
+  animation: lockFadeIn 0.6s ease both;
 }
-
-/* =====================================================
-   ПАСХАЛКА: ПАУТИНА ПО УГЛАМ ЭКРАНА
-   ===================================================== */
-#web-corners {
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 5000;
-  opacity: 0;
-  transition: opacity 1.2s ease;
+#spider-activation.active { display: flex; }
+#spider-activation .activation-box {
+  position: relative;
+  width: min(560px, 100%);
+  padding: 50px 36px 44px;
+  background: rgba(8, 8, 16, 0.96);
+  border: 2px solid #e62429;
+  border-radius: 12px;
+  text-align: center;
+  box-shadow:
+    0 0 60px rgba(230,36,41,0.6),
+    0 0 120px rgba(30,144,255,0.4),
+    inset 0 0 60px rgba(230,36,41,0.08);
+  animation: spiderBoxIn 0.8s cubic-bezier(0.16, 1, 0.3, 1);
 }
-#web-corners.on { opacity: 0.75; }
-#web-corners .web {
-  position: absolute;
-  width: 260px;
-  height: 260px;
-  color: rgba(255,255,255,0.75);
+@keyframes spiderBoxIn {
+  from { opacity: 0; transform: scale(0.85) translateY(20px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
 }
-#web-corners .web svg { width: 100%; height: 100%; }
-#web-corners .web.tl { top: -20px; left: -20px; }
-#web-corners .web.tr { top: -20px; right: -20px; transform: scaleX(-1); }
-#web-corners .web.bl { bottom: -20px; left: -20px; transform: scaleY(-1); }
-#web-corners .web.br { bottom: -20px; right: -20px; transform: scale(-1, -1); }
-
-/* =====================================================
-   ПАСХАЛКА: ПАУК НА ПАУТИНКЕ (за 5 статей)
-   ===================================================== */
-#spider-drop {
-  position: fixed;
-  top: -100px;
-  right: 15%;
-  z-index: 8500;
-  pointer-events: none;
-  transition: top 1s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.5s ease;
-  opacity: 0;
-}
-#spider-drop.show { top: 30vh; opacity: 1; }
-#spider-drop.hide { top: -200px; opacity: 0; }
-#spider-drop svg {
-  width: 60px; height: 60px;
-  filter: drop-shadow(0 0 12px rgba(230,36,41,0.9));
-}
-#spider-drop::before {
+#spider-activation .activation-box::before,
+#spider-activation .activation-box::after {
   content: "";
   position: absolute;
-  bottom: 100%;
-  left: 50%;
-  width: 1px;
-  height: 30vh;
-  background: linear-gradient(to bottom, rgba(255,255,255,0.05), rgba(255,255,255,0.5));
-  transform: translateX(-50%);
+  width: 24px; height: 24px;
+  border: 3px solid #e62429;
+  filter: drop-shadow(0 0 10px #e62429);
 }
-
-/* =====================================================
-   ПАСХАЛКА: ПАУТИНА ПРИ БЕЗДЕЙСТВИИ
-   ===================================================== */
-.idle-hint {
-  position: fixed;
-  bottom: 100px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 8500;
-  padding: 10px 20px;
-  background: rgba(0,0,0,0.85);
-  border: 1px solid #e62429;
-  border-radius: 6px;
-  color: #e62429;
-  font-family: inherit;
-  font-size: 0.85rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  text-shadow: 0 0 8px rgba(230,36,41,0.8);
-  box-shadow: 0 0 24px rgba(230,36,41,0.5);
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.6s ease;
+#spider-activation .activation-box::before { top: -3px; left: -3px; border-right: none; border-bottom: none; }
+#spider-activation .activation-box::after { bottom: -3px; right: -3px; border-left: none; border-top: none; }
+#spider-activation .act-spider {
+  font-size: 72px;
+  margin-bottom: 20px;
+  animation: spiderBounce 1.5s ease-in-out infinite;
+  filter: drop-shadow(0 0 20px rgba(230,36,41,0.9));
 }
-.idle-hint.show { opacity: 1; }
-
-/* =====================================================
-   ПАСХАЛКА: СЕКРЕТНОЕ СЛОВО
-   ===================================================== */
-.spider-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 8800;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.4s ease;
-  background: radial-gradient(circle at center, transparent 30%, rgba(0,0,0,0.5) 100%);
+@keyframes spiderBounce {
+  0%, 100% { transform: translateY(0) rotate(-3deg); }
+  50%      { transform: translateY(-10px) rotate(3deg); }
 }
-.spider-overlay.on { opacity: 1; }
-.spider-overlay .crawl {
-  position: absolute;
-  top: 50%; left: 50%;
-  transform: translate(-50%, -50%);
-  color: #e62429;
-  font-size: clamp(1.2rem, 4vw, 2rem);
+#spider-activation .act-title {
+  font-size: clamp(1.4rem, 5vw, 2.2rem);
   font-weight: 900;
-  letter-spacing: 0.2em;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
-  text-shadow: 0 0 16px rgba(230,36,41,0.9), 0 0 32px rgba(230,36,41,0.5);
-  white-space: nowrap;
-  animation: crawlPulse 2s ease-in-out infinite;
+  margin-bottom: 14px;
+  background: linear-gradient(90deg, #e62429 0%, #1e90ff 50%, #e62429 100%);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  filter: drop-shadow(0 0 14px rgba(230,36,41,0.8));
+  animation: spiderShift 3s linear infinite;
 }
-@keyframes crawlPulse {
-  0%, 100% { transform: translate(-50%, -50%) scale(1); }
-  50%      { transform: translate(-50%, -50%) scale(1.05); }
+#spider-activation .act-subtitle {
+  color: #cfd8ff;
+  font-size: 1rem;
+  letter-spacing: 0.08em;
+  line-height: 1.6;
+  margin-bottom: 24px;
+}
+#spider-activation .act-subtitle strong { color: #e62429; }
+#spider-activation .act-hint {
+  color: #666;
+  font-size: 0.78rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  margin-top: 20px;
 }
 
-/* Фейковая статья в поиске */
-.search-item.spider-fake {
-  background: linear-gradient(90deg, rgba(230,36,41,0.1), rgba(30,144,255,0.1));
-  border-left: 3px solid #e62429;
-}
-.search-item.spider-fake:hover {
-  background: linear-gradient(90deg, rgba(230,36,41,0.25), rgba(30,144,255,0.25));
+@media (max-width: 560px) {
+  #spider-activation .act-spider { font-size: 56px; }
+  #spider-activation .activation-box { padding: 36px 24px 32px; }
 }
 
 /* Адаптив */
@@ -1323,6 +1298,21 @@ body.shame-open { overflow: hidden; }
 
   <div id="cursor-ring"></div>
   <div id="cursor"></div>
+
+  <!-- Экран активации пасхалки (страница /spider) -->
+  <div id="spider-activation">
+    <div class="activation-box">
+      <div class="act-spider">🕷️</div>
+      <div class="act-title">ПАСХАЛКА АКТИВИРОВАНА</div>
+      <div class="act-subtitle">
+        Ты нашёл скрытую страницу.<br>
+        Теперь <strong>все пасхалки Человека-паука</strong> разблокированы на сайте:<br>
+        паук в углу, паутина при бездействии, тройной клик по заголовку,<br>
+        секретное слово в поиске и <strong>новая тема «Паук»</strong>.
+      </div>
+      <div class="act-hint">🕸️ With great power comes great responsibility 🕸️</div>
+    </div>
+  </div>
 
   <!-- Пасхалка: паутина по углам -->
   <div id="web-corners">
@@ -1392,7 +1382,7 @@ body.shame-open { overflow: hidden; }
       <div class="theme-toggle">
         <button class="theme-btn active" data-theme-btn="raider">⚔️ Рейдеры</button>
         <button class="theme-btn" data-theme-btn="antiraider">🛡️ Антирейдеры</button>
-        <button class="theme-btn" data-theme-btn="spider">🕷️ Паук</button>
+        <button class="theme-btn spider-hidden" data-theme-btn="spider">🕷️ Паук</button>
       </div>
       <a href="/admin" target="_blank" class="admin-btn">⚙️ Админка</a>
       <button class="logout-btn" id="logout-btn">↩ Выйти</button>
@@ -1502,9 +1492,48 @@ const shameDetailsTitle = document.getElementById('shame-details-title');
 const shameDetailsText = document.getElementById('shame-details-text');
 const shameStamp = document.getElementById('shame-stamp');
 
+/* ===== АКТИВАЦИЯ ПАСХАЛКИ ЧЕРЕЗ /spider ===== */
+const SPIDER_KEY = 'raidwiki-spider-unlocked';
+
+/* Проверяем URL — если пользователь зашёл на /spider, активируем пасхалку */
+(function checkSpiderActivation() {
+  const path = window.location.pathname.replace(/\/+$/, '');
+  const hash = window.location.hash;
+  const isSpiderPath = path === '/spider' || hash === '#spider';
+
+  if (isSpiderPath) {
+    try { localStorage.setItem(SPIDER_KEY, '1'); } catch {}
+    /* Показываем экран активации */
+    const act = document.getElementById('spider-activation');
+    act.classList.add('active');
+    /* Возвращаем URL на главную через 3.5 сек (без перезагрузки) */
+    setTimeout(() => {
+      history.replaceState(null, '', '/');
+      act.classList.remove('active');
+      /* Применяем разблокировку */
+      applySpiderUnlock();
+    }, 3500);
+  }
+})();
+
+/* Проверяем, разблокирована ли пасхалка ранее */
+function isSpiderUnlocked() {
+  try { return localStorage.getItem(SPIDER_KEY) === '1'; } catch { return false; }
+}
+
+/* Применяем разблокировку: показываем тему, включаем пасхалки */
+function applySpiderUnlock() {
+  if (!isSpiderUnlocked()) return;
+  document.body.classList.add('spider-unlocked');
+  const spiderBtn = document.querySelector('[data-theme-btn="spider"]');
+  if (spiderBtn) spiderBtn.classList.remove('spider-hidden');
+}
+
 /* ===== Тема ===== */
 const themeBtns = document.querySelectorAll('[data-theme-btn]');
 function setTheme(theme) {
+  /* Запрещаем ставить тему «паук», если пасхалка не активирована */
+  if (theme === 'spider' && !isSpiderUnlocked()) theme = 'raider';
   document.documentElement.setAttribute('data-theme', theme);
   themeBtns.forEach(b => b.classList.toggle('active', b.dataset.themeBtn === theme));
   try { localStorage.setItem('raidwiki-theme', theme); } catch {}
@@ -1747,10 +1776,8 @@ function renderPage(category, pageId) {
     if (t) t.addEventListener('click', () => openShame(page.shame));
   }
 
-  /* Отмечаем посещение статьи для пасхалки */
   markPageVisit(category, pageId);
 
-  /* Комментарии */
   const form = document.getElementById('comment-form');
   const authorInput = document.getElementById('comment-author');
   const textInput = document.getElementById('comment-text');
@@ -1888,9 +1915,9 @@ function renderSearchResults(query) {
   const results = searchPages(query);
   activeSearchIndex = -1;
 
-  /* ===== Пасхалка: секретное слово ===== */
+  /* Пасхалка: секретное слово — только если пасхалка активирована */
   const spiderWords = ['паук', 'spider', 'spidey', 'человек-паук', 'человек паук', 'питер паркер', 'peter parker'];
-  const isSpiderQuery = spiderWords.some(w => q === w || q.includes(w));
+  const isSpiderQuery = isSpiderUnlocked() && spiderWords.some(w => q === w || q.includes(w));
 
   if (!q) {
     searchResults.classList.remove('open');
@@ -1900,7 +1927,6 @@ function renderSearchResults(query) {
 
   let html = '';
 
-  /* Фейковый Спайдермен всегда сверху если совпало */
   if (isSpiderQuery) {
     html += `
       <button class="search-item spider-fake" data-spider="1">
@@ -2014,14 +2040,15 @@ document.addEventListener('keydown', e => {
 });
 
 /* =====================================================
-   ПАСХАЛКИ ПРО ПАУКА
+   ПАСХАЛКИ ПРО ПАУКА (работают ТОЛЬКО после /spider)
    ===================================================== */
 
-/* 1. ПАУК В УГЛУ — убегает и возвращается */
+/* 1. ПАУК В УГЛУ */
 const spiderCorner = document.getElementById('spider-corner');
 const spiderWebLine = document.getElementById('spider-web-line');
 let spiderEscaped = false;
 spiderCorner.addEventListener('click', () => {
+  if (!isSpiderUnlocked()) return;
   if (!spiderEscaped) {
     spiderCorner.classList.add('escape');
     spiderWebLine.classList.add('on');
@@ -2036,10 +2063,11 @@ spiderCorner.addEventListener('click', () => {
   }
 });
 
-/* 2. ТРОЙНОЙ КЛИК ПО ЗАГОЛОВКУ — паутина */
+/* 2. ТРОЙНОЙ КЛИК ПО ЗАГОЛОВКУ */
 let titleClickCount = 0;
 let titleClickTimer = null;
 mainTitle.addEventListener('click', () => {
+  if (!isSpiderUnlocked()) return;
   titleClickCount++;
   clearTimeout(titleClickTimer);
   titleClickTimer = setTimeout(() => { titleClickCount = 0; }, 800);
@@ -2053,15 +2081,17 @@ mainTitle.addEventListener('click', () => {
 /* 3. ПАУТИНА ПО УГЛАМ */
 const webCorners = document.getElementById('web-corners');
 function toggleWebCorners(on) {
+  if (!isSpiderUnlocked()) return;
   if (on) webCorners.classList.add('on');
   else webCorners.classList.remove('on');
 }
 
-/* 4. ПАУК НА ПАУТИНКЕ — за 5 статей подряд */
+/* 4. ПАУК НА ПАУТИНКЕ — за 5 статей */
 const visitedPages = new Set();
 const spiderDrop = document.getElementById('spider-drop');
 let spiderDropped = false;
 function markPageVisit(category, pageId) {
+  if (!isSpiderUnlocked()) return;
   const key = category + ':' + pageId;
   visitedPages.add(key);
   if (visitedPages.size >= 5 && !spiderDropped) {
@@ -2079,9 +2109,10 @@ function showSpiderDrop() {
   }, 4000);
 }
 
-/* 5. СЕКРЕТНОЕ СЛОВО — оверлей с пауком */
+/* 5. СЕКРЕТНОЕ СЛОВО */
 const spiderOverlay = document.getElementById('spider-overlay');
 function triggerSpiderOverlay() {
+  if (!isSpiderUnlocked()) return;
   spiderOverlay.classList.add('on');
   setTimeout(() => spiderOverlay.classList.remove('on'), 3000);
   console.log('%c🕷️ With great power comes great responsibility.', 'color:#e62429;font-size:16px;font-weight:bold;');
@@ -2091,6 +2122,7 @@ function triggerSpiderOverlay() {
 const idleHint = document.getElementById('idle-hint');
 let idleTimer = null;
 function resetIdle() {
+  if (!isSpiderUnlocked()) return;
   clearTimeout(idleTimer);
   idleHint.classList.remove('show');
   toggleWebCorners(false);
@@ -2107,15 +2139,6 @@ function resetIdle() {
   document.addEventListener(ev, resetIdle, { passive: true });
 });
 resetIdle();
-
-/* 7. СКРЫТАЯ СТРАНИЦА /spider */
-if (window.location.pathname === '/spider' || window.location.hash === '#spider') {
-  document.addEventListener('DOMContentLoaded', () => {
-    setTimeout(() => {
-      alert('🕷️ С пауком-пасхалкой! Ты нашёл скрытую страницу.\n\nWith great power comes great responsibility.');
-    }, 500);
-  });
-}
 
 /* ===== Шум ===== */
 (function initNoise() {
@@ -2159,6 +2182,8 @@ async function loadWiki() {
   }
 }
 
+/* ===== СТАРТ ===== */
+applySpiderUnlock();
 checkSession();
 </script>
 </body>
